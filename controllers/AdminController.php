@@ -1,0 +1,425 @@
+<?php
+// controllers/AdminController.php
+require_once 'config/config.php';
+require_once 'models/Database.php';
+require_once 'models/Product.php';
+require_once 'models/Order.php';
+require_once 'models/Revenue.php';
+
+class AdminController {
+    private $pdo;
+    private $productModel;
+    private $orderModel;
+    private $revenueModel;
+
+    public function __construct() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $this->pdo = Database::getInstance();
+        $this->productModel = new Product($this->pdo);
+        $this->orderModel = new Order($this->pdo);
+        $this->revenueModel = new Revenue($this->pdo);
+    }
+
+    public function index() {
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+            header('Location: ' . BASE_URL . 'admin.php?url=login');
+            exit;
+        }
+
+        // Tổng doanh thu
+        $total_revenue = $this->revenueModel->getTotalRevenue() ?? 0;
+        error_log('Total revenue: ' . $total_revenue);
+
+        // Tổng đơn hàng
+        $total_orders = $this->orderModel->countAll();
+        error_log('Total orders: ' . $total_orders);
+
+        // Tổng sản phẩm
+        $total_products = $this->productModel->countAll();
+        error_log('Total products: ' . $total_products);
+
+        // Tổng khách hàng
+        $total_users = $this->pdo->query("SELECT COUNT(*) FROM users WHERE role = 'customer'")->fetchColumn();
+        error_log('Total users: ' . $total_users);
+
+        // Danh sách khách hàng
+        $search = isset($_GET['search_customer']) ? trim($_GET['search_customer']) : '';
+        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+        $items_per_page = 5;
+        $offset = ($page - 1) * $items_per_page;
+
+        try {
+            $query = "SELECT id, name, email, phone, created_at 
+                      FROM users 
+                      WHERE role = 'customer'";
+            if ($search) {
+                $query .= " AND (name LIKE :search OR email LIKE :search)";
+            }
+            $query .= " ORDER BY created_at DESC LIMIT :offset, :items_per_page";
+            $stmt = $this->pdo->prepare($query);
+            if ($search) {
+                $stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
+            }
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->bindValue(':items_per_page', $items_per_page, PDO::PARAM_INT);
+            $stmt->execute();
+            $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log('Customers fetched: ' . count($customers) . ' records');
+        } catch (PDOException $e) {
+            error_log('Error fetching customers: ' . $e->getMessage());
+            $customers = [];
+        }
+
+        // Tổng số khách hàng cho phân trang
+        $total_customers_query = "SELECT COUNT(*) FROM users WHERE role = 'customer'";
+        if ($search) {
+            $total_customers_query .= " AND (name LIKE :search OR email LIKE :search)";
+        }
+        $stmt = $this->pdo->prepare($total_customers_query);
+        if ($search) {
+            $stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        $total_customers = $stmt->fetchColumn();
+        $total_customer_pages = ceil($total_customers / $items_per_page);
+        error_log('Total customers: ' . $total_customers . ', Pages: ' . $total_customer_pages);
+
+        // Thống kê đơn hàng theo trạng thái
+        $order_status_counts = [
+            'pending' => 0,
+            'processing' => 0,
+            'shipped' => 0,
+            'delivered' => 0,
+            'cancelled' => 0
+        ];
+        try {
+            $status_query = "SELECT status, COUNT(*) as count FROM orders GROUP BY status";
+            $status_stmt = $this->pdo->query($status_query);
+            while ($row = $status_stmt->fetch(PDO::FETCH_ASSOC)) {
+                if (array_key_exists($row['status'], $order_status_counts)) {
+                    $order_status_counts[$row['status']] = $row['count'];
+                }
+            }
+            error_log('Order status counts: ' . print_r($order_status_counts, true));
+        } catch (PDOException $e) {
+            error_log('Error fetching order status counts: ' . $e->getMessage());
+        }
+
+        // Doanh thu 7 ngày gần nhất
+        $end_date = date('Y-m-d');
+        $start_date = date('Y-m-d', strtotime('-6 days')); // 7 ngày
+        try {
+            $recent_revenue = $this->revenueModel->getRevenueByDateRange($start_date, $end_date);
+            error_log('Recent revenue data: ' . print_r($recent_revenue, true));
+        } catch (Exception $e) {
+            error_log('Error fetching recent revenue: ' . $e->getMessage());
+            $recent_revenue = [];
+        }
+
+        $data = [
+            'total_revenue' => $total_revenue,
+            'total_orders' => $total_orders,
+            'total_products' => $total_products,
+            'total_users' => $total_users,
+            'customers' => $customers,
+            'current_page' => $page,
+            'total_customer_pages' => $total_customer_pages,
+            'search_customer' => $search,
+            'order_status_counts' => $order_status_counts,
+            'recent_revenue' => $recent_revenue
+        ];
+
+        include VIEWS_PATH . 'admin/dashboard.php';
+    }
+
+    public function register() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $name = trim($_POST['name'] ?? '');
+            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+            $phone = trim($_POST['phone'] ?? '');
+            $password = $_POST['password'] ?? '';
+            $confirm_password = $_POST['confirm_password'] ?? '';
+            $address_line = trim($_POST['address_line'] ?? '');
+            $city = trim($_POST['city'] ?? '');
+            $postal_code = trim($_POST['postal_code'] ?? '');
+            $country = trim($_POST['country'] ?? 'Vietnam');
+
+            // Validation
+            $errors = [];
+
+            // Validate required fields
+            if (empty($name) || strlen($name) < 2) {
+                $errors[] = "Họ tên phải có ít nhất 2 ký tự.";
+            }
+
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Email không hợp lệ.";
+            }
+
+            if (empty($phone) || !preg_match('/^(0[3|5|7|8|9])+([0-9]{8})$/', $phone)) {
+                $errors[] = "Số điện thoại không hợp lệ (VD: 0901234567).";
+            }
+
+            if (empty($password) || strlen($password) < 6) {
+                $errors[] = "Mật khẩu phải có ít nhất 6 ký tự.";
+            }
+
+            // Validate password strength
+            if (!empty($password)) {
+                if (!preg_match('/[A-Z]/', $password)) {
+                    $errors[] = "Mật khẩu phải chứa ít nhất 1 chữ hoa.";
+                }
+                if (!preg_match('/[a-z]/', $password)) {
+                    $errors[] = "Mật khẩu phải chứa ít nhất 1 chữ thường.";
+                }
+                if (!preg_match('/[0-9]/', $password)) {
+                    $errors[] = "Mật khẩu phải chứa ít nhất 1 số.";
+                }
+            }
+
+            if ($password !== $confirm_password) {
+                $errors[] = "Mật khẩu xác nhận không khớp.";
+            }
+
+            // Check if email already exists
+            try {
+                $check_email_query = "SELECT COUNT(*) FROM users WHERE email = :email";
+                $stmt = $this->pdo->prepare($check_email_query);
+                $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+                $stmt->execute();
+                if ($stmt->fetchColumn() > 0) {
+                    $errors[] = "Email này đã được sử dụng.";
+                }
+            } catch (PDOException $e) {
+                $errors[] = "Lỗi kiểm tra email: " . $e->getMessage();
+                error_log("Error checking email: " . $e->getMessage());
+            }
+
+            // Check if phone already exists
+            try {
+                $check_phone_query = "SELECT COUNT(*) FROM users WHERE phone = :phone";
+                $stmt = $this->pdo->prepare($check_phone_query);
+                $stmt->bindParam(':phone', $phone, PDO::PARAM_STR);
+                $stmt->execute();
+                if ($stmt->fetchColumn() > 0) {
+                    $errors[] = "Số điện thoại này đã được sử dụng.";
+                }
+            } catch (PDOException $e) {
+                $errors[] = "Lỗi kiểm tra số điện thoại: " . $e->getMessage();
+                error_log("Error checking phone: " . $e->getMessage());
+            }
+
+            if (!empty($errors)) {
+                $error = implode('<br>', $errors);
+                include VIEWS_PATH . 'admin/register.php';
+                return;
+            }
+
+            // Hash password
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+            try {
+                // Begin transaction
+                $this->pdo->beginTransaction();
+
+                // Insert user
+                $user_query = "INSERT INTO users (name, email, phone, password, role, created_at, updated_at) 
+                              VALUES (:name, :email, :phone, :password, 'admin', NOW(), NOW())";
+                $stmt = $this->pdo->prepare($user_query);
+                $stmt->bindParam(':name', $name, PDO::PARAM_STR);
+                $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+                $stmt->bindParam(':phone', $phone, PDO::PARAM_STR);
+                $stmt->bindParam(':password', $hashed_password, PDO::PARAM_STR);
+                $stmt->execute();
+
+                $user_id = $this->pdo->lastInsertId();
+
+                // Insert address if provided
+                if (!empty($address_line) || !empty($city)) {
+                    $address_query = "INSERT INTO addresses (user_id, address_line, city, postal_code, country, is_default) 
+                                     VALUES (:user_id, :address_line, :city, :postal_code, :country, 1)";
+                    $stmt = $this->pdo->prepare($address_query);
+                    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+                    $stmt->bindParam(':address_line', $address_line, PDO::PARAM_STR);
+                    $stmt->bindParam(':city', $city, PDO::PARAM_STR);
+                    $stmt->bindParam(':postal_code', $postal_code, PDO::PARAM_STR);
+                    $stmt->bindParam(':country', $country, PDO::PARAM_STR);
+                    $stmt->execute();
+                }
+
+                // Commit transaction
+                $this->pdo->commit();
+
+                // Log successful registration
+                error_log("New admin registered: ID=$user_id, Email=$email, Name=$name");
+
+                // Redirect to login with success message
+                $_SESSION['registration_success'] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                header('Location: ' . BASE_URL . 'admin.php?url=login');
+                exit;
+
+            } catch (PDOException $e) {
+                // Rollback transaction
+                $this->pdo->rollBack();
+                $error = "Lỗi khi tạo tài khoản: " . $e->getMessage();
+                error_log("Registration error: " . $e->getMessage());
+                include VIEWS_PATH . 'admin/register.php';
+                return;
+            }
+        } else {
+            include VIEWS_PATH . 'admin/register.php';
+        }
+    }
+
+    public function login() {
+        // Check for registration success message
+        if (isset($_SESSION['registration_success'])) {
+            $success = $_SESSION['registration_success'];
+            unset($_SESSION['registration_success']);
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+            $password = $_POST['password'] ?? '';
+            $remember_me = isset($_POST['remember_me']);
+
+            if (empty($email) || empty($password)) {
+                $error = "Email và mật khẩu không được để trống.";
+                include VIEWS_PATH . 'admin/login.php';
+                return;
+            }
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $error = "Email không hợp lệ.";
+                include VIEWS_PATH . 'admin/login.php';
+                return;
+            }
+
+            try {
+                $query = "SELECT * FROM users WHERE email = :email AND role = 'admin' LIMIT 1";
+                $stmt = $this->pdo->prepare($query);
+                $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+                $stmt->execute();
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($user && password_verify($password, $user['password'])) {
+                    // Regenerate session ID for security
+                    session_regenerate_id(true);
+                    
+                    $_SESSION['user'] = $user;
+                    $_SESSION['login_time'] = time();
+
+                    // Update last login time
+                    $update_query = "UPDATE users SET updated_at = NOW() WHERE id = :user_id";
+                    $stmt = $this->pdo->prepare($update_query);
+                    $stmt->bindParam(':user_id', $user['id'], PDO::PARAM_INT);
+                    $stmt->execute();
+
+                    // Handle remember me functionality
+                    if ($remember_me) {
+                        $token = bin2hex(random_bytes(32));
+                        $expire = time() + (30 * 24 * 60 * 60); // 30 days
+                        
+                        // Store token in database (you might want to create a remember_tokens table)
+                        setcookie('remember_admin', $token, $expire, '/', '', true, true);
+                    }
+
+                    // Log successful login
+                    error_log("Admin login successful: " . $user['email']);
+
+                    // Redirect to dashboard
+                    header('Location: ' . BASE_URL . 'admin.php?url=dashboard');
+                    exit;
+                } else {
+                    $error = "Email hoặc mật khẩu không đúng.";
+                    // Log failed login attempt
+                    error_log("Failed login attempt for email: " . $email);
+                }
+            } catch (PDOException $e) {
+                $error = "Lỗi kết nối cơ sở dữ liệu: " . $e->getMessage();
+                error_log("Database error during login: " . $e->getMessage());
+            }
+            include VIEWS_PATH . 'admin/login.php';
+        } else {
+            include VIEWS_PATH . 'admin/login.php';
+        }
+    }
+
+    public function logout() {
+        // Clear remember me cookie if it exists
+        if (isset($_COOKIE['remember_admin'])) {
+            setcookie('remember_admin', '', time() - 3600, '/', '', true, true);
+        }
+
+        // Log logout
+        if (isset($_SESSION['user'])) {
+            error_log("Admin logout: " . $_SESSION['user']['email']);
+        }
+
+        // Clear session
+        $_SESSION = [];
+        session_destroy();
+        
+        header('Location: ' . BASE_URL . 'admin.php?url=login');
+        exit;
+    }
+
+    public function forgotPassword() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+            
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $error = "Vui lòng nhập email hợp lệ.";
+                include VIEWS_PATH . 'admin/forgot_password.php';
+                return;
+            }
+
+            try {
+                // Check if email exists
+                $query = "SELECT id, name FROM users WHERE email = :email AND role = 'admin' LIMIT 1";
+                $stmt = $this->pdo->prepare($query);
+                $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+                $stmt->execute();
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($user) {
+                    // Generate reset token
+                    $token = bin2hex(random_bytes(32));
+                    $expire = date('Y-m-d H:i:s', time() + 3600); // 1 hour
+
+                    // Store token in database (you might want to create a password_resets table)
+                    // For now, we'll just show success message
+                    
+                    $success = "Nếu email tồn tại, chúng tôi đã gửi link đặt lại mật khẩu đến email của bạn.";
+                    error_log("Password reset requested for: " . $email);
+                } else {
+                    // Don't reveal if email doesn't exist
+                    $success = "Nếu email tồn tại, chúng tôi đã gửi link đặt lại mật khẩu đến email của bạn.";
+                }
+            } catch (PDOException $e) {
+                $error = "Lỗi hệ thống. Vui lòng thử lại sau.";
+                error_log("Forgot password error: " . $e->getMessage());
+            }
+            
+            include VIEWS_PATH . 'admin/forgot_password.php';
+        } else {
+            include VIEWS_PATH . 'admin/forgot_password.php';
+        }
+    }
+
+    // Helper method to validate password strength
+    private function validatePasswordStrength($password) {
+        return strlen($password) >= 6 && 
+               preg_match('/[A-Z]/', $password) && 
+               preg_match('/[a-z]/', $password) && 
+               preg_match('/[0-9]/', $password);
+    }
+
+    // Helper method to sanitize input
+    private function sanitizeInput($input) {
+        return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
+    }
+}
+?>
