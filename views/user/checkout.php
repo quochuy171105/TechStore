@@ -88,14 +88,33 @@ foreach ($promotions as $promo) {
 // Chuyển dữ liệu mã giảm giá sang JavaScript
 $promoDataJson = json_encode($promoData);
 
+// ✅ THÊM: Tính toán giá trị hiển thị dựa trên mã giảm giá đã chọn
+$selectedPromoCode = $_POST['promo_code'] ?? '';
+$discountAmount = 0;
+$finalTotalPrice = $originalTotalPrice;
+
+if (!empty($selectedPromoCode) && isset($promoData[$selectedPromoCode])) {
+    $promo = $promoData[$selectedPromoCode];
+    if ($promo['discount_type'] === 'percentage') {
+        $discountAmount = $originalTotalPrice * ($promo['discount_value'] / 100);
+    } else {
+        $discountAmount = $promo['discount_value'];
+    }
+    $discountAmount = min($discountAmount, $originalTotalPrice);
+    $finalTotalPrice = $originalTotalPrice - $discountAmount;
+}
+
 // Xử lý yêu cầu AJAX để lưu đơn hàng
 if (isset($_POST['action']) && $_POST['action'] === 'confirm_payment') {
     header('Content-Type: application/json');
 
     $paymentMethod = $_POST['paymentMethod'] ?? '';
     $promoCode = $_POST['promoCode'] ?? '';
+    // ✅ SỬA: Sử dụng totalPrice đã được tính toán từ JavaScript (đã trừ discount)
     $totalPrice = floatval($_POST['totalPrice'] ?? $originalTotalPrice);
 
+    // ✅ XÓA: Không áp dụng mã giảm giá ở đây nữa vì đã được tính trong JavaScript
+    /*
     // Áp dụng mã giảm giá
     $discount = 0;
     if (!empty($promoCode) && isset($promoData[$promoCode])) {
@@ -108,6 +127,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'confirm_payment') {
         $discount = min($discount, $totalPrice);
         $totalPrice -= $discount;
     }
+    */
 
     $response = ['success' => false, 'message' => 'Lỗi không xác định'];
 
@@ -235,9 +255,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
 include __DIR__ . '/../layouts/header.php';
 ?>
 
-
-
-
 <meta charset="UTF-8">
 <title>Thanh Toán - Shop TMĐT Điện Thoại</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -340,9 +357,16 @@ include __DIR__ . '/../layouts/header.php';
         display: flex;
         justify-content: space-between;
     }
+
+    .qr-section {
+        text-align: center;
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
 </style>
-
-
 
 <div class="main-content container">
     <h2>Thanh toán đơn hàng</h2>
@@ -374,7 +398,7 @@ include __DIR__ . '/../layouts/header.php';
                         <select name="promo_code" id="promo-code" class="form-select">
                             <option value="">-- Chọn mã giảm giá --</option>
                             <?php foreach ($promoOptions as $code => $label): ?>
-                                <option value="<?php echo htmlspecialchars($code); ?>" <?php echo ($_POST['promo_code'] ?? '') === $code ? 'selected' : ''; ?>>
+                                <option value="<?php echo htmlspecialchars($code); ?>" <?php echo $selectedPromoCode === $code ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($label); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -393,13 +417,18 @@ include __DIR__ . '/../layouts/header.php';
                             <span class="label">Tổng tiền hàng</span>
                             <span class="value" id="original-price"><?php echo number_format($originalTotalPrice, 0, ',', '.'); ?>đ</span>
                         </div>
-                        <div class="price-detail discount" id="discount-section" style="display: none;">
+                        <!-- ✅ SỬA: Hiển thị mã giảm giá nếu đã chọn -->
+                        <div class="price-detail discount" id="discount-section" style="<?php echo $discountAmount > 0 ? 'display: flex;' : 'display: none;'; ?>">
                             <span class="label">Mã giảm giá</span>
-                            <span class="value" id="discount-amount"></span>
+                            <span class="value" id="discount-amount">
+                                <?php if ($discountAmount > 0): ?>
+                                    -<?php echo number_format($discountAmount, 0, ',', '.'); ?>đ (<?php echo htmlspecialchars($selectedPromoCode); ?>)
+                                <?php endif; ?>
+                            </span>
                         </div>
                         <div class="final-price">
                             <span>Thành tiền:</span>
-                            <span id="final-price"><?php echo number_format($originalTotalPrice, 0, ',', '.'); ?>đ</span>
+                            <span id="final-price"><?php echo number_format($finalTotalPrice, 0, ',', '.'); ?>đ</span>
                         </div>
                     </div>
                     <button type="submit" name="confirm_order" class="btn btn-checkout w-100">Xác nhận đặt hàng</button>
@@ -434,41 +463,13 @@ include __DIR__ . '/../layouts/header.php';
 
                 <!-- Nếu là chuyển khoản và đang chờ xác nhận -->
                 <?php if ($isOrderPending && $paymentMethod === 'chuyển_khoản'): ?>
-                    <div class="mt-3 text-center">
+                    <div class="qr-section">
                         <p>Vui lòng quét mã QR để chuyển khoản:</p>
                         <?php if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/DoAnCuoiKiLapTrinhWeb2/assets/image/maqr2.png")): ?>
                             <img src="/DoAnCuoiKiLapTrinhWeb2/assets/image/maqr2.png" alt="QR Code" class="img-fluid" style="max-width:200px;">
                         <?php else: ?>
                             <p class="text-muted">[Không tìm thấy mã QR]</p>
                         <?php endif; ?>
-
-                        <!-- Hiển thị lại tổng tiền và mã giảm giá -->
-                        <div class="price-details mt-3">
-                            <div class="price-detail">
-                                <span class="label">Tổng tiền hàng</span>
-                                <span class="value" id="original-price-summary"><?php echo number_format($originalTotalPrice, 0, ',', '.'); ?>đ</span>
-                            </div>
-                            <?php
-                            $discount = 0;
-                            if (!empty($promoCode) && isset($promoData[$promoCode])) {
-                                $promo = $promoData[$promoCode];
-                                $discount = $promo['discount_type'] === 'percentage'
-                                    ? $originalTotalPrice * ($promo['discount_value'] / 100)
-                                    : $promo['discount_value'];
-                                $discount = min($discount, $originalTotalPrice);
-                            }
-                            if ($discount > 0): ?>
-                                <div class="price-detail discount">
-                                    <span class="label">Mã giảm giá</span>
-                                    <span class="value">-<?= number_format($discount, 0, ',', '.'); ?>đ (<?= htmlspecialchars($promoCode) ?>)</span>
-                                </div>
-                            <?php endif; ?>
-                            <div class="final-price">
-                                <span>Thành tiền:</span>
-                                <span id="final-price-summary"><?php echo number_format($originalTotalPrice - $discount, 0, ',', '.'); ?>đ</span>
-                            </div>
-                        </div>
-                        <!-- Kết thúc hiển thị lại tổng tiền và mã giảm giá -->
 
                         <button id="confirm-payment-btn" class="btn btn-confirm-payment w-100 mt-3">Xác nhận thanh toán</button>
                         <div id="payment-status" class="alert alert-info mt-2" style="display: none;">
@@ -481,7 +482,6 @@ include __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const originalPrice = <?php echo $originalTotalPrice; ?>;
@@ -493,9 +493,17 @@ include __DIR__ . '/../layouts/header.php';
         const discountAmount = document.getElementById('discount-amount');
         const finalPrice = document.getElementById('final-price');
 
-        promoSelect.addEventListener('change', function() {
-            const promoCode = this.value;
+        // ✅ SỬA: Trigger sự kiện change khi trang load để hiển thị giá trị đã chọn
+        if (promoSelect.value) {
+            updatePrice(promoSelect.value);
+        }
 
+        promoSelect.addEventListener('change', function() {
+            updatePrice(this.value);
+        });
+
+        // ✅ THÊM: Hàm cập nhật giá riêng biệt
+        function updatePrice(promoCode) {
             if (!promoCode || !promoData[promoCode]) {
                 discountSection.style.display = 'none';
                 finalPrice.textContent = formatNumber(originalPrice) + 'đ';
@@ -517,7 +525,7 @@ include __DIR__ . '/../layouts/header.php';
             discountSection.style.display = 'flex';
             discountAmount.textContent = '-' + formatNumber(discount) + 'đ (' + promoCode + ')';
             finalPrice.textContent = formatNumber(finalPriceValue) + 'đ';
-        });
+        }
 
         // Xử lý nút "Xác nhận thanh toán"
         const confirmPaymentBtn = document.getElementById('confirm-payment-btn');
@@ -533,13 +541,27 @@ include __DIR__ . '/../layouts/header.php';
                 setTimeout(function() {
                     const paymentMethod = document.getElementById('payment-method').value;
                     const promoCode = document.getElementById('promo-code').value;
+                    
+                    // ✅ SỬA: Tính toán lại totalPrice dựa trên mã giảm giá - đây là giá cuối cùng đã trừ discount
+                    let totalPrice = originalPrice;
+                    if (promoCode && promoData[promoCode]) {
+                        const promo = promoData[promoCode];
+                        let discount = 0;
+                        if (promo.discount_type === 'percentage') {
+                            discount = totalPrice * (promo.discount_value / 100);
+                        } else {
+                            discount = promo.discount_value;
+                        }
+                        discount = Math.min(discount, totalPrice);
+                        totalPrice -= discount; // Trừ discount ở đây
+                    }
 
                     fetch(window.location.href, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded',
                             },
-                            body: 'action=confirm_payment&paymentMethod=' + encodeURIComponent(paymentMethod) + '&promoCode=' + encodeURIComponent(promoCode) + '&totalPrice=' + originalPrice
+                            body: 'action=confirm_payment&paymentMethod=' + encodeURIComponent(paymentMethod) + '&promoCode=' + encodeURIComponent(promoCode) + '&totalPrice=' + totalPrice
                         })
                         .then(response => response.json())
                         .then(data => {
