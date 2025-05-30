@@ -25,8 +25,7 @@ $stmtOrders->execute(['user_id' => $userId]);
 $orders = $stmtOrders->fetchAll(PDO::FETCH_ASSOC);
 
 // Hàm ánh xạ trạng thái sang tiếng Việt
-function translateStatus($status)
-{
+function translateStatus($status) {
     $statusMap = [
         'pending' => 'Chờ duyệt',
         'processing' => 'Đang xử lý',
@@ -49,34 +48,45 @@ foreach ($orders as $order) {
     $stmtItems->execute(['order_id' => $order['id']]);
     $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
 
+    // Tính tổng tiền ban đầu (trước giảm giá) từ chi tiết sản phẩm
+    $totalBeforeDiscount = 0;
+    foreach ($items as $item) {
+        $totalBeforeDiscount += $item['price'] * $item['quantity'];
+    }
+
+    // Tính tỷ lệ giảm giá dựa trên total_amount (sau giảm giá) và tổng tiền ban đầu
+    $totalAfterDiscount = $order['total_amount'];
+    $discountRatio = $totalBeforeDiscount > 0 ? $totalAfterDiscount / $totalBeforeDiscount : 1;
+
+    // Áp dụng tỷ lệ giảm giá cho từng sản phẩm
+    $formattedItems = array_map(function ($item) use ($discountRatio) {
+        $price = (int)$item['price'];
+        $subtotalBeforeDiscount = $price * $item['quantity'];
+        $subtotalAfterDiscount = $subtotalBeforeDiscount * $discountRatio; // Áp dụng tỷ lệ giảm giá
+        return [
+            'product_id' => $item['product_id'],
+            'name' => $item['name'],
+            'price' => number_format($price, 0, ',', '.') . 'đ',
+            'quantity' => $item['quantity'],
+            'image' => $item['image'],
+            'subtotal' => number_format($subtotalAfterDiscount, 0, ',', '.') . 'đ' // Thành tiền sau giảm giá
+        ];
+    }, $items);
+
     $orderHistory[] = [
         'id' => $order['id'],
         'date' => date('d/m/Y', strtotime($order['created_at'])),
-        'total' => number_format($order['total_amount'], 0, ',', '.') . 'đ',
+        'total' => number_format($order['total_amount'], 0, ',', '.') . 'đ', // Sử dụng total_amount từ bảng orders
         'status' => translateStatus($order['status']),
         'address' => $order['address_line'] . ', ' . $order['city'] . ', ' . $order['postal_code'] . ', ' . $order['country'],
-        'items' => array_map(function ($item) {
-            return [
-                'product_id' => $item['product_id'],
-                'name' => $item['name'],
-                'price' => number_format($item['price'], 0, ',', '.') . 'đ',
-                'quantity' => $item['quantity'],
-                'image' => $item['image']
-            ];
-        }, $items)
+        'items' => $formattedItems
     ];
-}
-
-function parsePrice($priceStr)
-{
-    return (int)preg_replace('/[^\d]/', '', $priceStr);
 }
 
 // Lấy order_id từ URL (nếu có)
 $highlightOrderId = isset($_GET['order_id']) ? (int)$_GET['order_id'] : null;
 include __DIR__ . '/../layouts/header.php';
 ?>
-
 
 <meta charset="UTF-8">
 <title>Lịch Sử Đơn Hàng - Shop TMĐT Điện Thoại</title>
@@ -143,7 +153,6 @@ include __DIR__ . '/../layouts/header.php';
     }
 </style>
 
-
 <div class="main-section container">
     <h2>Lịch sử đơn hàng</h2>
     <?php if (empty($orderHistory)): ?>
@@ -175,10 +184,6 @@ include __DIR__ . '/../layouts/header.php';
                         </thead>
                         <tbody>
                             <?php foreach ($order['items'] as $item): ?>
-                                <?php
-                                $price = parsePrice($item['price']);
-                                $subtotal = $price * $item['quantity'];
-                                ?>
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
@@ -188,7 +193,7 @@ include __DIR__ . '/../layouts/header.php';
                                     </td>
                                     <td><?php echo htmlspecialchars($item['price']); ?></td>
                                     <td><?php echo htmlspecialchars($item['quantity']); ?></td>
-                                    <td><?php echo number_format($subtotal, 0, ',', '.') . 'đ'; ?></td>
+                                    <td><?php echo htmlspecialchars($item['subtotal']); ?></td>
                                     <?php if ($order['status'] === 'Đã giao' || $order['status'] === 'Hoàn thành'): ?>
                                         <td>
                                             <a href="feedback.php?order_id=<?php echo htmlspecialchars($order['id']); ?>&product_id=<?php echo htmlspecialchars($item['product_id']); ?>" class="btn-rate">Đánh giá</a>
@@ -206,9 +211,6 @@ include __DIR__ . '/../layouts/header.php';
     <?php endif; ?>
 </div>
 
-
-</div>
-
 <script>
     // Cuộn đến đơn hàng được chỉ định trong URL (nếu có)
     document.addEventListener('DOMContentLoaded', function() {
@@ -224,6 +226,5 @@ include __DIR__ . '/../layouts/header.php';
         }
     });
 </script>
-
 
 <?php include __DIR__ . '/../layouts/footer.php'; ?>
