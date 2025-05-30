@@ -31,7 +31,7 @@ if (!$categories) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         .navbar {
-            background-color: #000 !important;
+            background-color:rgb(34, 34, 34) !important;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 0.8rem 0;
             position: relative;
