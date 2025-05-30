@@ -2,6 +2,7 @@
 //session_start();
 
 require_once '../../controllers/OrderController.php';
+require_once '../../models/Database.php';
 
 // ✅ Kiểm tra người dùng đã đăng nhập hay chưa
 if (session_status() === PHP_SESSION_NONE) session_start();
@@ -13,19 +14,6 @@ $userId = $_SESSION['user_id']; // Đảm bảo đã đăng nhập mới dùng �
 
 $pdo = Database::getInstance();
 $orderController = new OrderController($pdo); // Khởi tạo controller
-
-// ✅ Kết nối cơ sở dữ liệu (nên viết trong file config/database.php để tái sử dụng)
-$host = 'localhost';
-$dbname = 'doancuoikylaptrinhweb';
-$user = 'root';
-$pass = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Lỗi kết nối CSDL: " . $e->getMessage());
-}
 
 // Lấy thông tin người dùng từ bảng users
 $stmtUser = $pdo->prepare("SELECT name, phone FROM users WHERE id = :user_id");
@@ -250,307 +238,335 @@ include __DIR__ . '/../layouts/header.php';
 
 
 
-    <meta charset="UTF-8">
-    <title>Thanh Toán - Shop TMĐT Điện Thoại</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
+<meta charset="UTF-8">
+<title>Thanh Toán - Shop TMĐT Điện Thoại</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    .main-content {
+        padding: 30px 0;
+    }
 
-        .main-content {
-            padding: 30px 0;
-        }
+    .form-section,
+    .summary-section {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        padding: 25px;
+    }
 
-        .form-section,
-        .summary-section {
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-            padding: 25px;
-        }
+    h2 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 30px;
+    }
 
-        h2 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 30px;
-        }
+    .btn-checkout {
+        background: linear-gradient(to right, #40c4ff, #0288d1);
+        color: #fff;
+        font-weight: 600;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        transition: background 0.3s ease;
+    }
 
-        .btn-checkout {
-            background: linear-gradient(to right, #40c4ff, #0288d1);
-            color: #fff;
-            font-weight: 600;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            transition: background 0.3s ease;
-        }
+    .btn-checkout:hover {
+        background: linear-gradient(to right, #0288d1, #01579b);
+    }
 
-        .btn-checkout:hover {
-            background: linear-gradient(to right, #0288d1, #01579b);
-        }
+    .btn-confirm-payment {
+        background: linear-gradient(to right, #28a745, #218838);
+        color: #fff;
+        font-weight: 600;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        transition: background 0.3s ease;
+    }
 
-        .btn-confirm-payment {
-            background: linear-gradient(to right, #28a745, #218838);
-            color: #fff;
-            font-weight: 600;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            transition: background 0.3s ease;
-        }
+    .btn-confirm-payment:hover {
+        background: linear-gradient(to right, #218838, #1e7e34);
+    }
 
-        .btn-confirm-payment:hover {
-            background: linear-gradient(to right, #218838, #1e7e34);
-        }
+    .product-img {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        border-radius: 8px;
+        margin-right: 10px;
+    }
 
-        .product-img {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-            border-radius: 8px;
-            margin-right: 10px;
-        }
+    .product-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-        .product-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .product-details {
+        display: flex;
+        align-items: center;
+    }
 
-        .product-details {
-            display: flex;
-            align-items: center;
-        }
+    .price-details {
+        margin: 20px 0;
+    }
 
-        .price-details {
-            margin: 20px 0;
-        }
+    .price-detail {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
 
-        .price-detail {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
+    .price-detail .label {
+        font-weight: bold;
+    }
 
-        .price-detail .label {
-            font-weight: bold;
-        }
+    .price-detail .value {
+        font-weight: bold;
+        color: #000;
+    }
 
-        .price-detail .value {
-            font-weight: bold;
-            color: #000;
-        }
+    .price-detail.discount {
+        color: #ff0000;
+    }
 
-        .price-detail.discount {
-            color: #ff0000;
-        }
-
-        .final-price {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #000;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-    </style>
-
+    .final-price {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #000;
+        border-top: 1px solid #ddd;
+        padding-top: 10px;
+        display: flex;
+        justify-content: space-between;
+    }
+</style>
 
 
-    <div class="main-content container">
-        <h2>Thanh toán đơn hàng</h2>
-        <div class="row g-4">
-            <!-- Form Thông Tin Giao Hàng -->
-            <div class="col-md-7">
-                <div class="form-section">
-                    <h5 class="mb-3">Thông tin giao hàng</h5>
-                    <?php if (isset($error)): ?>
-                        <div class="alert alert-danger"><?php echo $error; ?></div>
-                    <?php endif; ?>
-                    <form method="POST" id="checkout-form">
-                        <div class="mb-3">
-                            <label class="form-label">Họ tên</label>
-                            <input name="name" type="text" class="form-control" value="<?php echo htmlspecialchars($name); ?>" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Số điện thoại</label>
-                            <input name="phone" type="tel" class="form-control" value="<?php echo htmlspecialchars($phone); ?>" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Địa chỉ</label>
-                            <textarea name="address" class="form-control" rows="3" readonly>
+
+<div class="main-content container">
+    <h2>Thanh toán đơn hàng</h2>
+    <div class="row g-4">
+        <!-- Form Thông Tin Giao Hàng -->
+        <div class="col-md-7">
+            <div class="form-section">
+                <h5 class="mb-3">Thông tin giao hàng</h5>
+                <?php if (isset($error)): ?>
+                    <div class="alert alert-danger"><?php echo $error; ?></div>
+                <?php endif; ?>
+                <form method="POST" id="checkout-form">
+                    <div class="mb-3">
+                        <label class="form-label">Họ tên</label>
+                        <input name="name" type="text" class="form-control" value="<?php echo htmlspecialchars($name); ?>" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input name="phone" type="tel" class="form-control" value="<?php echo htmlspecialchars($phone); ?>" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <textarea name="address" class="form-control" rows="3" readonly>
                                 <?php echo htmlspecialchars($addressLine . ', ' . $city . ', ' . $postalCode . ', ' . $country); ?>
                             </textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Mã giảm giá</label>
+                        <select name="promo_code" id="promo-code" class="form-select">
+                            <option value="">-- Chọn mã giảm giá --</option>
+                            <?php foreach ($promoOptions as $code => $label): ?>
+                                <option value="<?php echo htmlspecialchars($code); ?>" <?php echo ($_POST['promo_code'] ?? '') === $code ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($label); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Phương thức thanh toán</label>
+                        <select name="paymentMethod" id="payment-method" class="form-select" required>
+                            <option value="" disabled <?php echo !isset($_POST['paymentMethod']) ? 'selected' : ''; ?>>-- Chọn phương thức --</option>
+                            <option value="tiền_mặt" <?php echo ($_POST['paymentMethod'] ?? '') === 'tiền_mặt' ? 'selected' : ''; ?>>Thanh toán khi nhận hàng (COD)</option>
+                            <option value="chuyển_khoản" <?php echo ($_POST['paymentMethod'] ?? '') === 'chuyển_khoản' ? 'selected' : ''; ?>>Chuyển khoản ngân hàng</option>
+                        </select>
+                    </div>
+                    <div class="price-details">
+                        <div class="price-detail">
+                            <span class="label">Tổng tiền hàng</span>
+                            <span class="value" id="original-price"><?php echo number_format($originalTotalPrice, 0, ',', '.'); ?>đ</span>
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label">Mã giảm giá</label>
-                            <select name="promo_code" id="promo-code" class="form-select">
-                                <option value="">-- Chọn mã giảm giá --</option>
-                                <?php foreach ($promoOptions as $code => $label): ?>
-                                    <option value="<?php echo htmlspecialchars($code); ?>" <?php echo ($_POST['promo_code'] ?? '') === $code ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($label); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                        <div class="price-detail discount" id="discount-section" style="display: none;">
+                            <span class="label">Mã giảm giá</span>
+                            <span class="value" id="discount-amount"></span>
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label">Phương thức thanh toán</label>
-                            <select name="paymentMethod" id="payment-method" class="form-select" required>
-                                <option value="" disabled <?php echo !isset($_POST['paymentMethod']) ? 'selected' : ''; ?>>-- Chọn phương thức --</option>
-                                <option value="tiền_mặt" <?php echo ($_POST['paymentMethod'] ?? '') === 'tiền_mặt' ? 'selected' : ''; ?>>Thanh toán khi nhận hàng (COD)</option>
-                                <option value="chuyển_khoản" <?php echo ($_POST['paymentMethod'] ?? '') === 'chuyển_khoản' ? 'selected' : ''; ?>>Chuyển khoản ngân hàng</option>
-                            </select>
+                        <div class="final-price">
+                            <span>Thành tiền:</span>
+                            <span id="final-price"><?php echo number_format($originalTotalPrice, 0, ',', '.'); ?>đ</span>
                         </div>
-                        <div class="price-details">
+                    </div>
+                    <button type="submit" name="confirm_order" class="btn btn-checkout w-100">Xác nhận đặt hàng</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tóm tắt đơn hàng -->
+        <div class="col-md-5">
+            <div class="summary-section">
+                <h5 class="mb-3">Đơn hàng của bạn</h5>
+                <?php if (empty($cartItems)): ?>
+                    <p class="text-muted text-center">Giỏ hàng của bạn đang trống.</p>
+                <?php else: ?>
+                    <ul class="list-group mb-3">
+                        <?php foreach ($cartItems as $item): ?>
+                            <li class="list-group-item product-item">
+                                <div class="product-details">
+                                    <img src="<?= BASE_URL ?>assets/image/<?= htmlspecialchars($item['image']) ?>" class="product-img" alt="Ảnh sản phẩm">
+                                    <div>
+                                        <strong><?php echo htmlspecialchars($item['name']); ?></strong><br>
+                                        x<?php echo $item['quantity']; ?>
+                                    </div>
+                                </div>
+                                <div>
+                                    <strong><?php echo number_format($item['price'] * $item['quantity'], 0, ',', '.'); ?>đ</strong>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+
+                <!-- Nếu là chuyển khoản và đang chờ xác nhận -->
+                <?php if ($isOrderPending && $paymentMethod === 'chuyển_khoản'): ?>
+                    <div class="mt-3 text-center">
+                        <p>Vui lòng quét mã QR để chuyển khoản:</p>
+                        <?php if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/DoAnCuoiKiLapTrinhWeb2/assets/image/maqr2.png")): ?>
+                            <img src="/DoAnCuoiKiLapTrinhWeb2/assets/image/maqr2.png" alt="QR Code" class="img-fluid" style="max-width:200px;">
+                        <?php else: ?>
+                            <p class="text-muted">[Không tìm thấy mã QR]</p>
+                        <?php endif; ?>
+
+                        <!-- Hiển thị lại tổng tiền và mã giảm giá -->
+                        <div class="price-details mt-3">
                             <div class="price-detail">
                                 <span class="label">Tổng tiền hàng</span>
-                                <span class="value" id="original-price"><?php echo number_format($originalTotalPrice, 0, ',', '.'); ?>đ</span>
+                                <span class="value" id="original-price-summary"><?php echo number_format($originalTotalPrice, 0, ',', '.'); ?>đ</span>
                             </div>
-                            <div class="price-detail discount" id="discount-section" style="display: none;">
-                                <span class="label">Mã giảm giá</span>
-                                <span class="value" id="discount-amount"></span>
-                            </div>
+                            <?php
+                            $discount = 0;
+                            if (!empty($promoCode) && isset($promoData[$promoCode])) {
+                                $promo = $promoData[$promoCode];
+                                $discount = $promo['discount_type'] === 'percentage'
+                                    ? $originalTotalPrice * ($promo['discount_value'] / 100)
+                                    : $promo['discount_value'];
+                                $discount = min($discount, $originalTotalPrice);
+                            }
+                            if ($discount > 0): ?>
+                                <div class="price-detail discount">
+                                    <span class="label">Mã giảm giá</span>
+                                    <span class="value">-<?= number_format($discount, 0, ',', '.'); ?>đ (<?= htmlspecialchars($promoCode) ?>)</span>
+                                </div>
+                            <?php endif; ?>
                             <div class="final-price">
                                 <span>Thành tiền:</span>
-                                <span id="final-price"><?php echo number_format($originalTotalPrice, 0, ',', '.'); ?>đ</span>
+                                <span id="final-price-summary"><?php echo number_format($originalTotalPrice - $discount, 0, ',', '.'); ?>đ</span>
                             </div>
                         </div>
-                        <button type="submit" name="confirm_order" class="btn btn-checkout w-100">Xác nhận đặt hàng</button>
-                    </form>
-                </div>
-            </div>
+                        <!-- Kết thúc hiển thị lại tổng tiền và mã giảm giá -->
 
-            <!-- Tóm tắt đơn hàng -->
-            <div class="col-md-5">
-                <div class="summary-section">
-                    <h5 class="mb-3">Đơn hàng của bạn</h5>
-                    <?php if (empty($cartItems)): ?>
-                        <p class="text-muted text-center">Giỏ hàng của bạn đang trống.</p>
-                    <?php else: ?>
-                        <ul class="list-group mb-3">
-                            <?php foreach ($cartItems as $item): ?>
-                                <li class="list-group-item product-item">
-                                    <div class="product-details">
-                                        <img src="<?= BASE_URL ?>assets/image/<?= htmlspecialchars($item['image']) ?>" class="product-img" alt="Ảnh sản phẩm">
-                                        <div>
-                                            <strong><?php echo htmlspecialchars($item['name']); ?></strong><br>
-                                            x<?php echo $item['quantity']; ?>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <strong><?php echo number_format($item['price'] * $item['quantity'], 0, ',', '.'); ?>đ</strong>
-                                    </div>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php endif; ?>
-
-                    <!-- Nếu là chuyển khoản và đang chờ xác nhận -->
-                    <?php if ($isOrderPending && $paymentMethod === 'chuyển_khoản'): ?>
-                        <div class="mt-3 text-center">
-                            <p>Vui lòng quét mã QR để chuyển khoản:</p>
-                            <?php if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/DoAnCuoiKiLapTrinhWeb2/assets/image/maqr2.png")): ?>
-                                <img src="/DoAnCuoiKiLapTrinhWeb2/assets/image/maqr2.png" alt="QR Code" class="img-fluid" style="max-width:200px;">
-                            <?php else: ?>
-                                <p class="text-muted">[Không tìm thấy mã QR]</p>
-                            <?php endif; ?>
-                            <button id="confirm-payment-btn" class="btn btn-confirm-payment w-100 mt-3">Xác nhận thanh toán</button>
-                            <div id="payment-status" class="alert alert-info mt-2" style="display: none;">
-                                Đơn hàng đang chờ xác nhận thanh toán. Vui lòng liên hệ nếu cần hỗ trợ.
-                            </div>
+                        <button id="confirm-payment-btn" class="btn btn-confirm-payment w-100 mt-3">Xác nhận thanh toán</button>
+                        <div id="payment-status" class="alert alert-info mt-2" style="display: none;">
+                            Đơn hàng đang chờ xác nhận thanh toán. Vui lòng liên hệ nếu cần hỗ trợ.
                         </div>
-                    <?php endif; ?>
-                </div>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
+</div>
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const originalPrice = <?php echo $originalTotalPrice; ?>;
-            const promoData = <?php echo $promoDataJson; ?>;
-            const formatNumber = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const originalPrice = <?php echo $originalTotalPrice; ?>;
+        const promoData = <?php echo $promoDataJson; ?>;
+        const formatNumber = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-            const promoSelect = document.getElementById('promo-code');
-            const discountSection = document.getElementById('discount-section');
-            const discountAmount = document.getElementById('discount-amount');
-            const finalPrice = document.getElementById('final-price');
+        const promoSelect = document.getElementById('promo-code');
+        const discountSection = document.getElementById('discount-section');
+        const discountAmount = document.getElementById('discount-amount');
+        const finalPrice = document.getElementById('final-price');
 
-            promoSelect.addEventListener('change', function() {
-                const promoCode = this.value;
+        promoSelect.addEventListener('change', function() {
+            const promoCode = this.value;
 
-                if (!promoCode || !promoData[promoCode]) {
-                    discountSection.style.display = 'none';
-                    finalPrice.textContent = formatNumber(originalPrice) + 'đ';
-                    return;
-                }
+            if (!promoCode || !promoData[promoCode]) {
+                discountSection.style.display = 'none';
+                finalPrice.textContent = formatNumber(originalPrice) + 'đ';
+                return;
+            }
 
-                const promo = promoData[promoCode];
-                let discount = 0;
+            const promo = promoData[promoCode];
+            let discount = 0;
 
-                if (promo.discount_type === 'percentage') {
-                    discount = originalPrice * (promo.discount_value / 100);
-                } else {
-                    discount = promo.discount_value;
-                }
+            if (promo.discount_type === 'percentage') {
+                discount = originalPrice * (promo.discount_value / 100);
+            } else {
+                discount = promo.discount_value;
+            }
 
-                discount = Math.min(discount, originalPrice);
-                const finalPriceValue = originalPrice - discount;
+            discount = Math.min(discount, originalPrice);
+            const finalPriceValue = originalPrice - discount;
 
-                discountSection.style.display = 'flex';
-                discountAmount.textContent = '-' + formatNumber(discount) + 'đ (' + promoCode + ')';
-                finalPrice.textContent = formatNumber(finalPriceValue) + 'đ';
-            });
+            discountSection.style.display = 'flex';
+            discountAmount.textContent = '-' + formatNumber(discount) + 'đ (' + promoCode + ')';
+            finalPrice.textContent = formatNumber(finalPriceValue) + 'đ';
+        });
 
-            // Xử lý nút "Xác nhận thanh toán"
-            const confirmPaymentBtn = document.getElementById('confirm-payment-btn');
-            const paymentStatus = document.getElementById('payment-status');
+        // Xử lý nút "Xác nhận thanh toán"
+        const confirmPaymentBtn = document.getElementById('confirm-payment-btn');
+        const paymentStatus = document.getElementById('payment-status');
 
-            if (confirmPaymentBtn) {
-                confirmPaymentBtn.addEventListener('click', function() {
-                    // Vô hiệu hóa nút để tránh nhấn lại
-                    confirmPaymentBtn.disabled = true;
-                    confirmPaymentBtn.textContent = 'Đang xử lý...';
+        if (confirmPaymentBtn) {
+            confirmPaymentBtn.addEventListener('click', function() {
+                // Vô hiệu hóa nút để tránh nhấn lại
+                confirmPaymentBtn.disabled = true;
+                confirmPaymentBtn.textContent = 'Đang xử lý...';
 
-                    // Chờ 3 giây trước khi gửi yêu cầu AJAX
-                    setTimeout(function() {
-                        const paymentMethod = document.getElementById('payment-method').value;
-                        const promoCode = document.getElementById('promo-code').value;
+                // Chờ 3 giây trước khi gửi yêu cầu AJAX
+                setTimeout(function() {
+                    const paymentMethod = document.getElementById('payment-method').value;
+                    const promoCode = document.getElementById('promo-code').value;
 
-                        fetch(window.location.href, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                },
-                                body: 'action=confirm_payment&paymentMethod=' + encodeURIComponent(paymentMethod) + '&promoCode=' + encodeURIComponent(promoCode) + '&totalPrice=' + originalPrice
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    // Chuyển hướng sau khi thành công
-                                    window.location.href = 'order_history.php?order_id=' + data.order_id;
-                                } else {
-                                    paymentStatus.classList.remove('alert-info');
-                                    paymentStatus.classList.add('alert-danger');
-                                    paymentStatus.textContent = 'Lỗi: ' + data.message;
-                                    paymentStatus.style.display = 'block';
-                                    confirmPaymentBtn.disabled = false;
-                                    confirmPaymentBtn.textContent = 'Xác nhận thanh toán';
-                                }
-                            })
-                            .catch(error => {
+                    fetch(window.location.href, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: 'action=confirm_payment&paymentMethod=' + encodeURIComponent(paymentMethod) + '&promoCode=' + encodeURIComponent(promoCode) + '&totalPrice=' + originalPrice
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Chuyển hướng sau khi thành công
+                                window.location.href = 'order_history.php?order_id=' + data.order_id;
+                            } else {
                                 paymentStatus.classList.remove('alert-info');
                                 paymentStatus.classList.add('alert-danger');
-                                paymentStatus.textContent = 'Lỗi server: ' + error;
+                                paymentStatus.textContent = 'Lỗi: ' + data.message;
                                 paymentStatus.style.display = 'block';
                                 confirmPaymentBtn.disabled = false;
                                 confirmPaymentBtn.textContent = 'Xác nhận thanh toán';
-                            });
-                    }, 2000); // Chờ 2 giây
-                });
-            }
-        });
-    </script>
+                            }
+                        })
+                        .catch(error => {
+                            paymentStatus.classList.remove('alert-info');
+                            paymentStatus.classList.add('alert-danger');
+                            paymentStatus.textContent = 'Lỗi server: ' + error;
+                            paymentStatus.style.display = 'block';
+                            confirmPaymentBtn.disabled = false;
+                            confirmPaymentBtn.textContent = 'Xác nhận thanh toán';
+                        });
+                }, 2000); // Chờ 2 giây
+            });
+        }
+    });
+</script>
 
 <?php include __DIR__ . '/../layouts/footer.php'; ?>
