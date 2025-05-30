@@ -1,6 +1,9 @@
+
 <!-- views/admin/forgot_password.php -->
 <?php
+// Đặt tiêu đề trang cho giao diện quên mật khẩu admin
 $page_title = 'Quên mật khẩu Admin';
+// Nạp header giao diện admin (chứa menu, css, js chung)
 include VIEWS_PATH . 'layouts/admin_header.php';
 ?>
 <div class="container py-5">
@@ -8,6 +11,7 @@ include VIEWS_PATH . 'layouts/admin_header.php';
         <div class="col-md-6 col-lg-4">
             <div class="card shadow-lg border-0">
                 <div class="card-body p-5">
+                    <!-- Tiêu đề và mô tả -->
                     <div class="text-center mb-4">
                         <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
                              style="width: 80px; height: 80px;">
@@ -17,6 +21,7 @@ include VIEWS_PATH . 'layouts/admin_header.php';
                         <p class="text-muted mb-0">Nhập email để nhận link đặt lại mật khẩu</p>
                     </div>
                     
+                    <!-- Hiển thị thông báo lỗi nếu có -->
                     <?php if (isset($error)): ?>
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="fas fa-exclamation-triangle me-2"></i>
@@ -25,6 +30,7 @@ include VIEWS_PATH . 'layouts/admin_header.php';
                         </div>
                     <?php endif; ?>
                     
+                    <!-- Hiển thị thông báo thành công nếu có -->
                     <?php if (isset($success)): ?>
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             <i class="fas fa-check-circle me-2"></i>
@@ -33,6 +39,7 @@ include VIEWS_PATH . 'layouts/admin_header.php';
                         </div>
                     <?php endif; ?>
                     
+                    <!-- Form quên mật khẩu -->
                     <form action="<?php echo BASE_URL; ?>admin.php?url=forgot-password" method="POST" id="forgotPasswordForm" novalidate>
                         <div class="mb-4">
                             <label for="email" class="form-label fw-semibold">
@@ -55,6 +62,7 @@ include VIEWS_PATH . 'layouts/admin_header.php';
                         </button>
                     </form>
                     
+                    <!-- Link quay lại đăng nhập -->
                     <div class="text-center">
                         <p class="mb-0 text-muted">Nhớ lại mật khẩu?</p>
                         <a href="<?php echo BASE_URL; ?>admin.php?url=login" 
@@ -83,6 +91,10 @@ include VIEWS_PATH . 'layouts/admin_header.php';
     </div>
 </div>
 
+<!-- 
+    CSS tuỳ chỉnh cho giao diện quên mật khẩu admin
+    - Hiệu ứng hover, border, màu sắc cho card, button, input, alert...
+-->
 <style>
 .card {
     transition: all 0.3s ease;
@@ -146,12 +158,16 @@ include VIEWS_PATH . 'layouts/admin_header.php';
 }
 </style>
 
+<!-- 
+    Script xử lý kiểm tra hợp lệ form quên mật khẩu, 
+    realtime validation, loading state, tự động ẩn alert...
+-->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('forgotPasswordForm');
     const resetBtn = document.getElementById('resetBtn');
     
-    // Form validation
+    // Form validation khi submit
     form.addEventListener('submit', function(e) {
         const email = document.getElementById('email');
         let isValid = true;
@@ -182,13 +198,13 @@ document.addEventListener('DOMContentLoaded', function() {
         resetBtn.disabled = true;
     });
     
-    // Email validation function
+    // Hàm kiểm tra định dạng email hợp lệ
     function isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
     
-    // Real-time validation
+    // Kiểm tra email realtime khi rời khỏi trường nhập
     const email = document.getElementById('email');
     email.addEventListener('blur', function() {
         if (this.value.trim() && !isValidEmail(this.value)) {
@@ -200,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Auto-dismiss alerts after 5 seconds
+    // Tự động ẩn thông báo alert sau 5 giây
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {
         setTimeout(() => {

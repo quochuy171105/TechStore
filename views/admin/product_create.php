@@ -1,18 +1,24 @@
+
 <!-- views/admin/product_create.php -->
 <?php
+// Đặt tiêu đề trang cho giao diện thêm/sửa sản phẩm
 $page_title = isset($product) ? 'Sửa sản phẩm' : 'Thêm sản phẩm';
+// Nạp header giao diện admin (chứa menu, css, js chung)
 include VIEWS_PATH . 'layouts/admin_header.php';
 ?>
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
+            <!-- Tiêu đề trang -->
             <h2 class="mb-4"><?php echo $page_title; ?></h2>
+            <!-- Hiển thị thông báo lỗi nếu có -->
             <?php if (isset($error)): ?>
                 <div class="alert alert-danger alert-dismissible fade show">
                     <?php echo htmlspecialchars($error); ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
+            <!-- Hiển thị thông báo lỗi từ session nếu có -->
             <?php if (isset($_SESSION['error'])): ?>
                 <div class="alert alert-danger alert-dismissible fade show">
                     <?php echo htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?>
@@ -25,14 +31,17 @@ include VIEWS_PATH . 'layouts/admin_header.php';
         <div class="col-12">
             <div class="card shadow-sm border-0">
                 <div class="card-body">
+                    <!-- Form thêm/sửa sản phẩm -->
                     <form id="product-create-form" method="POST" enctype="multipart/form-data">
                         <?php if (isset($product)): ?>
+                            <!-- Nếu là sửa thì truyền id và hình ảnh cũ -->
                             <input type="hidden" name="id" value="<?php echo $product['id']; ?>">
                             <input type="hidden" name="existing_image" value="<?php echo htmlspecialchars($product['image']); ?>">
                         <?php endif; ?>
                         
                         <div class="row">
                             <div class="col-12 col-md-6 mb-3">
+                                <!-- Chọn danh mục sản phẩm -->
                                 <label for="category_id" class="form-label">Danh mục</label>
                                 <select class="form-select" id="category_id" name="category_id" required>
                                     <option value="">Chọn danh mục</option>
@@ -44,6 +53,7 @@ include VIEWS_PATH . 'layouts/admin_header.php';
                                 </select>
                             </div>
                             <div class="col-12 col-md-6 mb-3">
+                                <!-- Chọn thương hiệu sản phẩm -->
                                 <label for="brand_id" class="form-label">Thương hiệu</label>
                                 <select class="form-select" id="brand_id" name="brand_id" required>
                                     <option value="">Chọn thương hiệu</option>
@@ -57,27 +67,32 @@ include VIEWS_PATH . 'layouts/admin_header.php';
                         </div>
                         
                         <div class="mb-3">
+                            <!-- Nhập tên sản phẩm -->
                             <label for="name" class="form-label">Tên sản phẩm</label>
                             <input type="text" class="form-control" id="name" name="name" value="<?php echo isset($product) ? htmlspecialchars($product['name']) : ''; ?>" required>
                         </div>
                         
                         <div class="mb-3">
+                            <!-- Nhập mô tả sản phẩm -->
                             <label for="description" class="form-label">Mô tả</label>
                             <textarea class="form-control" id="description" name="description" rows="4"><?php echo isset($product) ? htmlspecialchars($product['description']) : ''; ?></textarea>
                         </div>
                         
                         <div class="row">
                             <div class="col-12 col-md-6 mb-3">
+                                <!-- Nhập giá sản phẩm -->
                                 <label for="price" class="form-label">Giá (VND)</label>
                                 <input type="number" class="form-control" id="price" name="price" step="0.01" value="<?php echo isset($product) ? $product['price'] : ''; ?>" required>
                             </div>
                             <div class="col-12 col-md-6 mb-3">
+                                <!-- Nhập số lượng tồn kho -->
                                 <label for="stock" class="form-label">Tồn kho</label>
                                 <input type="number" class="form-control" id="stock" name="stock" value="<?php echo isset($product) ? $product['stock'] : ''; ?>" required>
                             </div>
                         </div>
                         
                         <div class="mb-3">
+                            <!-- Upload hình ảnh sản phẩm -->
                             <label for="image" class="form-label">Hình ảnh</label>
                             <input type="file" class="form-control" id="image" name="image" accept="image/*">
                             <?php if (isset($product) && $product['image']): ?>
@@ -96,18 +111,22 @@ include VIEWS_PATH . 'layouts/admin_header.php';
                                         <div class="attribute-row mb-2">
                                             <div class="row g-2">
                                                 <div class="col-12 col-sm-5">
+                                                    <!-- Nhập tên thuộc tính -->
                                                     <input type="text" class="form-control" name="attributes[<?php echo $index; ?>][name]" value="<?php echo htmlspecialchars($attr['attribute_name']); ?>" placeholder="Tên thuộc tính (VD: RAM)" required>
                                                 </div>
                                                 <div class="col-12 col-sm-5">
+                                                    <!-- Nhập giá trị thuộc tính -->
                                                     <input type="text" class="form-control" name="attributes[<?php echo $index; ?>][value]" value="<?php echo htmlspecialchars($attr['attribute_value']); ?>" placeholder="Giá trị (VD: 8GB)" required>
                                                 </div>
                                                 <div class="col-12 col-sm-2">
+                                                    <!-- Nút xóa thuộc tính -->
                                                     <button type="button" class="btn btn-danger w-100 remove-attribute">Xóa</button>
                                                 </div>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
                                 <?php else: ?>
+                                    <!-- Nếu chưa có thuộc tính nào thì hiển thị một dòng trống -->
                                     <div class="attribute-row mb-2">
                                         <div class="row g-2">
                                             <div class="col-12 col-sm-5">
@@ -123,11 +142,14 @@ include VIEWS_PATH . 'layouts/admin_header.php';
                                     </div>
                                 <?php endif; ?>
                             </div>
+                            <!-- Nút thêm thuộc tính mới -->
                             <button type="button" id="add-attribute" class="btn btn-outline-primary mt-2">Thêm thuộc tính</button>
                         </div>
                         
                         <div class="d-flex flex-column flex-sm-row gap-2">
+                            <!-- Nút lưu sản phẩm -->
                             <button type="submit" class="btn btn-primary"><?php echo isset($product) ? 'Cập nhật' : 'Thêm'; ?> sản phẩm</button>
+                            <!-- Nút quay lại danh sách sản phẩm -->
                             <a href="<?php echo BASE_URL; ?>admin.php?url=products" class="btn btn-secondary">Hủy</a>
                         </div>
                     </form>

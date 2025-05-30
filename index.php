@@ -1,14 +1,16 @@
+
 <?php
 // index.php
+// File định tuyến chính cho giao diện người dùng
 
-// Khởi tạo session
+// Khởi tạo session để lưu thông tin đăng nhập, giỏ hàng, v.v.
 session_start();
 
 // Tải cấu hình và kết nối cơ sở dữ liệu
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/models/Database.php';
 
-// Tải các controller
+// Tải các controller cần thiết cho từng chức năng
 require_once __DIR__ . '/controllers/ProductController.php';
 require_once __DIR__ . '/controllers/CartController.php';
 require_once __DIR__ . '/controllers/UserController.php';
@@ -16,13 +18,11 @@ require_once __DIR__ . '/controllers/FeedbackController.php';
 require_once __DIR__ . '/controllers/OrderController.php';
 require_once __DIR__ . '/controllers/PromotionController.php';
 
-// Khởi tạo kết nối PDO
-
+// Khởi tạo kết nối PDO từ class Database
 $db = Database::getInstance();
-// ...existing code...
 $pdo = $db;
 
-// Khởi tạo các controller
+// Khởi tạo các controller với tham số là kết nối PDO
 $productController = new ProductController($pdo);
 $cartController = new CartController($pdo);
 $userController = new UserController($pdo);
@@ -30,11 +30,11 @@ $feedbackController = new FeedbackController($pdo);
 $orderController = new OrderController($pdo);
 $promotionController = new PromotionController($pdo);
 
-// Xử lý URL
+// Lấy URL người dùng truy cập (ví dụ: ?url=product_list)
 $request = isset($_GET['url']) ? trim($_GET['url'], '/') : '';
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Hàm kiểm tra đăng nhập
+// Hàm kiểm tra đăng nhập, nếu chưa đăng nhập thì chuyển hướng về trang login
 function requireLogin() {
     if (!isset($_SESSION['user'])) {
         header('Location: ' . BASE_URL . 'login');
@@ -42,22 +42,22 @@ function requireLogin() {
     }
 }
 
-// Định tuyến
+// Định tuyến các đường dẫn (route) của website
 switch ($request) {
-    // Thành viên 1: Giao diện người dùng cơ bản
+    // Trang chủ (giao diện người dùng)
     case '':
     case 'home':
-        // Trang chủ
+        // Hiển thị trang chủ
         require_once __DIR__ . '/views/user/home.php';
         break;
 
     case 'product_list':
-        // Danh sách sản phẩm
+        // Hiển thị danh sách sản phẩm
         require_once __DIR__ . '/views/user/product_list.php';
         break;
 
     case 'product_detail':
-        // Chi tiết sản phẩm
+        // Hiển thị chi tiết sản phẩm theo id truyền trên URL (?id=...)
         if (isset($_GET['id'])) {
             require_once __DIR__ . '/views/user/product_detail.php';
         } else {
@@ -67,31 +67,31 @@ switch ($request) {
         break;
 
     case 'search':
-        // Tìm kiếm sản phẩm
+        // Trang tìm kiếm sản phẩm
         require_once __DIR__ . '/views/user/search.php';
         break;
 
-    // Thành viên 2: Giỏ hàng và thanh toán
+    // Các chức năng liên quan đến giỏ hàng và thanh toán
     case 'cart':
-        // Giỏ hàng
+        // Trang giỏ hàng (yêu cầu đăng nhập)
         requireLogin();
         require_once __DIR__ . '/views/user/cart.php';
         break;
 
     case 'checkout':
-        // Thanh toán (yêu cầu đăng nhập)
+        // Trang thanh toán (yêu cầu đăng nhập)
         requireLogin();
         require_once __DIR__ . '/views/user/checkout.php';
         break;
 
     case 'order_history':
-        // Lịch sử đơn hàng (yêu cầu đăng nhập)
+        // Lịch sử đơn hàng của người dùng (yêu cầu đăng nhập)
         requireLogin();
         require_once __DIR__ . '/views/user/order_history.php';
         break;
 
     case 'apply_promotion':
-        // Áp dụng mã khuyến mãi (AJAX)
+        // Áp dụng mã khuyến mãi (AJAX, chỉ nhận POST)
         if ($method === 'POST') {
             require_once __DIR__ . '/services/apply_promotion.php';
         } else {
@@ -100,11 +100,11 @@ switch ($request) {
         }
         break;
 
-    // Thành viên 3: Đăng nhập/đăng ký và đánh giá
+    // Các chức năng đăng nhập, đăng ký, quên mật khẩu, đánh giá
     case 'login':
-        // Đăng nhập
+        // Trang đăng nhập
         if ($method === 'POST') {
-            // Xử lý đăng nhập
+            // Xử lý đăng nhập khi submit form
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
             $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
             $result = $userController->login($email, $password);
@@ -115,12 +115,13 @@ switch ($request) {
                 require_once __DIR__ . '/views/user/login.php';
             }
         } else {
+            // Hiển thị form đăng nhập
             require_once __DIR__ . '/views/user/login.php';
         }
         break;
 
     case 'register':
-        // Đăng ký
+        // Trang đăng ký tài khoản
         if ($method === 'POST') {
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
             $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
@@ -134,23 +135,24 @@ switch ($request) {
                 require_once __DIR__ . '/views/user/register.php';
             }
         } else {
+            // Hiển thị form đăng ký
             require_once __DIR__ . '/views/user/register.php';
         }
         break;
 
     case 'forgot_password':
-        // Khôi phục mật khẩu
+        // Trang khôi phục mật khẩu
         require_once __DIR__ . '/views/user/forgot_password.php';
         break;
 
     case 'account':
-        // Quản lý tài khoản (yêu cầu đăng nhập)
+        // Trang quản lý tài khoản (yêu cầu đăng nhập)
         requireLogin();
         require_once __DIR__ . '/views/user/account.php';
         break;
 
     case 'feedback_form':
-        // Form đánh giá sản phẩm (yêu cầu đăng nhập)
+        // Form đánh giá sản phẩm (yêu cầu đăng nhập, cần có product_id)
         requireLogin();
         if (isset($_GET['product_id'])) {
             require_once __DIR__ . '/views/user/feedback_form.php';
@@ -161,33 +163,33 @@ switch ($request) {
         break;
 
     case 'feedback_history':
-        // Lịch sử đánh giá (yêu cầu đăng nhập)
+        // Lịch sử đánh giá của người dùng (yêu cầu đăng nhập)
         requireLogin();
         require_once __DIR__ . '/views/user/feedback_history.php';
         break;
 
-    // AJAX services (Thành viên 1 & 2)
+    // Các dịch vụ AJAX cho sản phẩm và giỏ hàng
     case 'services/search_product':
-        // Tìm kiếm sản phẩm (AJAX)
+        // AJAX: Tìm kiếm sản phẩm
         require_once __DIR__ . '/services/search_product.php';
         break;
 
     case 'services/filter_product':
-        // Lọc sản phẩm (AJAX)
+        // AJAX: Lọc sản phẩm
         require_once __DIR__ . '/services/filter_product.php';
         break;
 
     case 'services/get_product':
-        // Lấy chi tiết sản phẩm (AJAX)
+        // AJAX: Lấy chi tiết sản phẩm
         require_once __DIR__ . '/services/get_product.php';
         break;
 
     case 'services/update_cart':
-        // Cập nhật giỏ hàng (AJAX)
+        // AJAX: Cập nhật giỏ hàng
         require_once __DIR__ . '/services/update_cart.php';
         break;
 
-    // Trang không tìm thấy
+    // Nếu không khớp bất kỳ route nào ở trên thì trả về trang 404
     default:
         http_response_code(404);
         echo '<h1>404 - Trang không tìm thấy</h1>';

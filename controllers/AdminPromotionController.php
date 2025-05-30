@@ -1,36 +1,47 @@
+
 <?php
 // controllers/AdminPromotionController.php
 require_once 'models/Promotion.php';
 
+// Controller quản trị khuyến mãi (CRUD khuyến mãi)
 class AdminPromotionController {
+    // Thuộc tính lưu model Promotion
     private $promotionModel;
 
+    // Hàm khởi tạo controller, khởi tạo kết nối DB và model Promotion
     public function __construct() {
-        $pdo = Database::getInstance();
-        $this->promotionModel = new Promotion($pdo);
+        $pdo = Database::getInstance(); // Lấy kết nối PDO từ singleton Database
+        $this->promotionModel = new Promotion($pdo); // Khởi tạo model Promotion
     }
 
+    // Trang danh sách khuyến mãi (quản lý khuyến mãi)
     public function index() {
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-        $items_per_page = ITEMS_PER_PAGE;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Trang hiện tại
+        $search = isset($_GET['search']) ? trim($_GET['search']) : ''; // Từ khóa tìm kiếm
+        $items_per_page = ITEMS_PER_PAGE; // Số khuyến mãi mỗi trang
 
+        // Lấy danh sách khuyến mãi theo trang và tìm kiếm
         $promotions = $this->promotionModel->getAll($page, $items_per_page, $search);
+        // Đếm tổng số khuyến mãi (phục vụ phân trang)
         $total_promotions = $this->promotionModel->countAll($search);
         $total_pages = ceil($total_promotions / $items_per_page);
 
+        // Chuẩn bị dữ liệu truyền sang view
         $data = [
             'promotions' => $promotions,
             'current_page' => $page,
             'total_pages' => $total_pages
         ];
 
+        // Nạp view quản lý khuyến mãi
         include VIEWS_PATH . 'admin/promotion_manage.php';
     }
 
+    // Thêm mới khuyến mãi (hiển thị form và xử lý submit)
     public function create() {
         error_log('AdminPromotionController::create called');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Lấy dữ liệu từ form POST, kiểm tra và validate dữ liệu
             $data = [
                 'code' => filter_input(INPUT_POST, 'code', FILTER_SANITIZE_STRING),
                 'discount_type' => filter_input(INPUT_POST, 'discount_type', FILTER_SANITIZE_STRING),
@@ -40,7 +51,7 @@ class AdminPromotionController {
                 'min_order_amount' => filter_input(INPUT_POST, 'min_order_amount', FILTER_VALIDATE_FLOAT) ?: null
             ];
 
-            // Kiểm tra dữ liệu đầu vào
+            // Kiểm tra dữ liệu đầu vào (bắt buộc)
             if (!$data['code'] || !$data['discount_type'] || !$data['discount_value'] || !$data['start_date'] || !$data['end_date']) {
                 $_SESSION['error'] = 'Vui lòng điền đầy đủ thông tin hợp lệ';
                 error_log('Invalid input data for promotion creation');
@@ -57,7 +68,7 @@ class AdminPromotionController {
                 exit;
             }
 
-            // Kiểm tra discount_value
+            // Kiểm tra giá trị khuyến mãi hợp lệ theo loại
             if ($data['discount_type'] === 'percentage' && ($data['discount_value'] <= 0 || $data['discount_value'] > 100)) {
                 $_SESSION['error'] = 'Giá trị khuyến mãi phần trăm phải từ 0 đến 100';
                 error_log('Invalid percentage discount value: ' . $data['discount_value']);
@@ -71,7 +82,7 @@ class AdminPromotionController {
                 exit;
             }
 
-            // Kiểm tra ngày
+            // Kiểm tra ngày bắt đầu và kết thúc hợp lệ
             if (strtotime($data['start_date']) > strtotime($data['end_date'])) {
                 $_SESSION['error'] = 'Ngày bắt đầu không được sau ngày kết thúc';
                 error_log('Invalid date range: start_date=' . $data['start_date'] . ', end_date=' . $data['end_date']);
@@ -85,7 +96,7 @@ class AdminPromotionController {
                 exit;
             }
 
-            // Kiểm tra min_order_amount
+            // Kiểm tra số tiền đơn hàng tối thiểu hợp lệ
             if ($data['min_order_amount'] !== null && $data['min_order_amount'] < 0) {
                 $_SESSION['error'] = 'Số tiền đơn hàng tối thiểu phải lớn hơn hoặc bằng 0';
                 error_log('Invalid min_order_amount: ' . $data['min_order_amount']);
@@ -93,6 +104,7 @@ class AdminPromotionController {
                 exit;
             }
 
+            // Thực hiện thêm khuyến mãi vào DB
             if ($this->promotionModel->create($data)) {
                 $_SESSION['success'] = 'Thêm khuyến mãi thành công';
                 error_log('Promotion created successfully, redirecting to promotions');
@@ -106,12 +118,15 @@ class AdminPromotionController {
             }
         }
 
+        // Nếu là GET, hiển thị form thêm khuyến mãi
         include VIEWS_PATH . 'admin/promotion_create.php';
     }
 
+    // Cập nhật khuyến mãi (hiển thị form và xử lý submit)
     public function update($id) {
         error_log('AdminPromotionController::update called with id: ' . $id);
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Lấy dữ liệu từ form POST, kiểm tra và validate dữ liệu
             $data = [
                 'code' => filter_input(INPUT_POST, 'code', FILTER_SANITIZE_STRING),
                 'discount_type' => filter_input(INPUT_POST, 'discount_type', FILTER_SANITIZE_STRING),
@@ -121,7 +136,7 @@ class AdminPromotionController {
                 'min_order_amount' => filter_input(INPUT_POST, 'min_order_amount', FILTER_VALIDATE_FLOAT) ?: null
             ];
 
-            // Kiểm tra dữ liệu đầu vào
+            // Kiểm tra dữ liệu đầu vào (bắt buộc)
             if (!$data['code'] || !$data['discount_type'] || !$data['discount_value'] || !$data['start_date'] || !$data['end_date']) {
                 $_SESSION['error'] = 'Vui lòng điền đầy đủ thông tin hợp lệ';
                 error_log('Invalid input data for promotion update');
@@ -138,7 +153,7 @@ class AdminPromotionController {
                 exit;
             }
 
-            // Kiểm tra discount_value
+            // Kiểm tra giá trị khuyến mãi hợp lệ theo loại
             if ($data['discount_type'] === 'percentage' && ($data['discount_value'] <= 0 || $data['discount_value'] > 100)) {
                 $_SESSION['error'] = 'Giá trị khuyến mãi phần trăm phải từ 0 đến 100';
                 error_log('Invalid percentage discount value: ' . $data['discount_value']);
@@ -152,7 +167,7 @@ class AdminPromotionController {
                 exit;
             }
 
-            // Kiểm tra ngày
+            // Kiểm tra ngày bắt đầu và kết thúc hợp lệ
             if (strtotime($data['start_date']) > strtotime($data['end_date'])) {
                 $_SESSION['error'] = 'Ngày bắt đầu không được sau ngày kết thúc';
                 error_log('Invalid date range: start_date=' . $data['start_date'] . ', end_date=' . $data['end_date']);
@@ -160,6 +175,7 @@ class AdminPromotionController {
                 exit;
             }
 
+            // Thực hiện cập nhật khuyến mãi vào DB
             if ($this->promotionModel->update($id, $data)) {
                 $_SESSION['success'] = 'Cập nhật khuyến mãi thành công';
                 error_log('Promotion updated successfully, redirecting to promotions');
@@ -172,6 +188,7 @@ class AdminPromotionController {
                 exit;
             }
         } else {
+            // Nếu là GET, hiển thị form cập nhật khuyến mãi
             $promotion = $this->promotionModel->getById($id);
             if (!$promotion) {
                 error_log('Promotion not found: ' . $id);
@@ -182,6 +199,7 @@ class AdminPromotionController {
         }
     }
 
+    // Xóa khuyến mãi theo id (có hỗ trợ AJAX và xử lý lỗi liên quan dữ liệu ràng buộc)
     public function delete($id) {
         error_log('AdminPromotionController::delete called with id: ' . $id);
         // Kiểm tra nếu là yêu cầu AJAX
@@ -189,6 +207,7 @@ class AdminPromotionController {
                   strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
         
         try {
+            // Gọi model để xóa khuyến mãi
             if ($this->promotionModel->delete($id)) {
                 $_SESSION['success'] = 'Xóa khuyến mãi thành công';
                 error_log('Promotion deleted successfully');
@@ -209,6 +228,7 @@ class AdminPromotionController {
                 }
             }
         } catch (PDOException $e) {
+            // Nếu xóa thất bại do ràng buộc dữ liệu (ví dụ khuyến mãi đã áp dụng cho đơn hàng)
             error_log('Delete promotion failed: ' . $e->getMessage());
             $_SESSION['error'] = 'Không thể xóa khuyến mãi do có dữ liệu liên quan';
             if ($isAjax) {
@@ -225,4 +245,5 @@ class AdminPromotionController {
         }
     }
 }
+// Kết thúc class AdminPromotionController
 ?>

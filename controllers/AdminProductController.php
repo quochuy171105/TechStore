@@ -1,38 +1,50 @@
+
 <?php
 // controllers/AdminProductController.php
 require_once 'models/Product.php';
 require_once 'models/Database.php';
 
+// Controller quản trị sản phẩm (CRUD sản phẩm, thuộc tính, upload ảnh, ...)
 class AdminProductController {
+    // Thuộc tính lưu model Product
     private $productModel;
+    // Thuộc tính lưu kết nối PDO
     private $pdo;
 
+    // Hàm khởi tạo controller, khởi tạo kết nối DB và model Product
     public function __construct() {
-        $this->pdo = Database::getInstance();
-        $this->productModel = new Product($this->pdo);
+        $this->pdo = Database::getInstance(); // Lấy kết nối PDO từ singleton Database
+        $this->productModel = new Product($this->pdo); // Khởi tạo model Product
     }
 
+    // Trang danh sách sản phẩm (quản lý sản phẩm)
     public function index() {
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-        $items_per_page = ITEMS_PER_PAGE;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Trang hiện tại
+        $search = isset($_GET['search']) ? trim($_GET['search']) : ''; // Từ khóa tìm kiếm
+        $items_per_page = ITEMS_PER_PAGE; // Số sản phẩm mỗi trang
 
+        // Lấy danh sách sản phẩm theo trang và tìm kiếm
         $products = $this->productModel->getAll($page, $items_per_page, $search);
+        // Đếm tổng số sản phẩm (phục vụ phân trang)
         $total_products = $this->productModel->countAll($search);
         $total_pages = ceil($total_products / $items_per_page);
 
+        // Chuẩn bị dữ liệu truyền sang view
         $data = [
             'products' => $products,
             'current_page' => $page,
             'total_pages' => $total_pages
         ];
 
+        // Nạp view quản lý sản phẩm
         include VIEWS_PATH . 'admin/product_manage.php';
     }
 
+    // Thêm mới sản phẩm (hiển thị form và xử lý submit)
     public function create() {
         error_log('AdminProductController::create called');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Lấy dữ liệu từ form POST
             $data = [
                 'category_id' => filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT),
                 'brand_id' => filter_input(INPUT_POST, 'brand_id', FILTER_VALIDATE_INT),
@@ -43,13 +55,15 @@ class AdminProductController {
                 'image' => ''
             ];
 
-            // Xử lý upload hình ảnh
+            // Xử lý upload hình ảnh sản phẩm
             if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
                 $image_name = time() . '_' . basename($_FILES['image']['name']);
                 $target_path = UPLOADS_PATH . 'products/' . $image_name;
+                // Tạo thư mục nếu chưa có
                 if (!is_dir(UPLOADS_PATH . 'products/')) {
                     mkdir(UPLOADS_PATH . 'products/', 0777, true);
                 }
+                // Lưu file ảnh vào thư mục uploads
                 if (move_uploaded_file($_FILES['image']['tmp_name'], $target_path)) {
                     $data['image'] = 'products/' . $image_name;
                 } else {
@@ -60,12 +74,12 @@ class AdminProductController {
                 }
             }
 
-            // Bắt đầu giao dịch để đảm bảo tính toàn vẹn dữ liệu
+            // Bắt đầu transaction để đảm bảo toàn vẹn dữ liệu khi thêm sản phẩm và thuộc tính
             $this->pdo->beginTransaction();
             try {
                 if ($this->productModel->create($data)) {
                     $product_id = $this->pdo->lastInsertId();
-                    // Lưu thuộc tính
+                    // Lưu các thuộc tính sản phẩm nếu có
                     if (isset($_POST['attributes']) && is_array($_POST['attributes'])) {
                         foreach ($_POST['attributes'] as $attr) {
                             if (!empty($attr['name']) && !empty($attr['value'])) {
@@ -94,6 +108,7 @@ class AdminProductController {
             }
         }
 
+        // Lấy danh sách danh mục và thương hiệu để hiển thị trong form
         $categories = $this->pdo->query("SELECT * FROM categories")->fetchAll(PDO::FETCH_ASSOC);
         $brands = $this->pdo->query("SELECT * FROM brands")->fetchAll(PDO::FETCH_ASSOC);
         $data = [
@@ -103,9 +118,11 @@ class AdminProductController {
         include VIEWS_PATH . 'admin/product_create.php';
     }
 
+    // Cập nhật sản phẩm (hiển thị form và xử lý submit)
     public function update($id) {
         error_log('AdminProductController::update called with id: ' . $id);
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Lấy dữ liệu từ form POST
             $data = [
                 'category_id' => filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT),
                 'brand_id' => filter_input(INPUT_POST, 'brand_id', FILTER_VALIDATE_INT),
@@ -116,7 +133,7 @@ class AdminProductController {
                 'image' => filter_input(INPUT_POST, 'existing_image', FILTER_SANITIZE_STRING) ?? ''
             ];
 
-            // Xử lý upload hình ảnh
+            // Xử lý upload hình ảnh mới nếu có
             if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
                 $image_name = time() . '_' . basename($_FILES['image']['name']);
                 $target_path = UPLOADS_PATH . 'products/' . $image_name;
@@ -133,13 +150,13 @@ class AdminProductController {
                 }
             }
 
-            // Bắt đầu giao dịch
+            // Bắt đầu transaction để đảm bảo toàn vẹn dữ liệu khi cập nhật sản phẩm và thuộc tính
             $this->pdo->beginTransaction();
             try {
                 if ($this->productModel->update($id, $data)) {
-                    // Xóa thuộc tính cũ
+                    // Xóa thuộc tính cũ trước khi thêm mới
                     $this->productModel->deleteAttributes($id);
-                    // Thêm thuộc tính mới
+                    // Thêm các thuộc tính mới nếu có
                     if (isset($_POST['attributes']) && is_array($_POST['attributes'])) {
                         foreach ($_POST['attributes'] as $attr) {
                             if (!empty($attr['name']) && !empty($attr['value'])) {
@@ -167,6 +184,7 @@ class AdminProductController {
                 exit;
             }
         } else {
+            // Nếu là GET, hiển thị form cập nhật sản phẩm
             $product = $this->productModel->getById($id);
             if (!$product) {
                 error_log('Product not found: ' . $id);
@@ -186,6 +204,7 @@ class AdminProductController {
         }
     }
 
+    // Xóa sản phẩm theo id (có hỗ trợ AJAX và xử lý lỗi liên quan dữ liệu ràng buộc)
     public function delete($id) {
         error_log('AdminProductController::delete called with id: ' . $id);
         // Kiểm tra nếu là yêu cầu AJAX
@@ -193,12 +212,15 @@ class AdminProductController {
                   strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
         
         try {
+            // Gọi model để xóa sản phẩm
             if ($this->productModel->delete($id)) {
                 $_SESSION['success'] = 'Xóa sản phẩm thành công';
                 error_log('Product deleted successfully');
                 if ($isAjax) {
+                    // Nếu là AJAX, trả về JSON
                     echo json_encode(['success' => true, 'message' => 'Xóa sản phẩm thành công']);
                 } else {
+                    // Nếu không phải AJAX, chuyển hướng về trang quản lý sản phẩm
                     header('Location: ' . BASE_URL . 'admin.php?url=products');
                     exit;
                 }
@@ -213,6 +235,7 @@ class AdminProductController {
                 }
             }
         } catch (PDOException $e) {
+            // Nếu xóa thất bại do ràng buộc dữ liệu (ví dụ sản phẩm có trong đơn hàng)
             error_log('Delete product failed: ' . $e->getMessage());
             $_SESSION['error'] = 'Không thể xóa sản phẩm do có dữ liệu liên quan';
             if ($isAjax) {
@@ -223,10 +246,11 @@ class AdminProductController {
             }
         }
         if (!$isAjax) {
-            // Nếu không phải AJAX, thực hiện chuyển hướng
+            // Nếu không phải AJAX, thực hiện chuyển hướng về trang sản phẩm
             header('Location: ' . BASE_URL . 'admin.php?url=products');
             exit;
         }
     }
 }
+// Kết thúc class AdminProductController
 ?>

@@ -2,13 +2,17 @@
 // models/Revenue.php
 require_once 'Database.php';
 
+// Lớp Revenue quản lý các thao tác liên quan đến doanh thu
 class Revenue {
-   private $pdo;
+    // Thuộc tính PDO để thao tác với database
+    private $pdo;
 
+    // Hàm khởi tạo, nhận kết nối PDO
     public function __construct($pdo) {
         $this->pdo = $pdo;
     }
 
+    // Lấy dữ liệu doanh thu theo khoảng ngày (trả về mảng các ngày và tổng doanh thu từng ngày)
     public function getRevenueByDateRange($start_date, $end_date) {
         try {
             // Log thông tin để debug
@@ -38,6 +42,7 @@ class Revenue {
         }
     }
 
+    // Lấy tổng doanh thu (tổng tất cả các dòng trong bảng revenue)
     public function getTotalRevenue() {
         try {
             $query = "SELECT SUM(total_amount) as total FROM revenue";
@@ -54,7 +59,7 @@ class Revenue {
         }
     }
     
-    // Thêm phương thức để tạo dữ liệu mẫu nếu bảng trống
+    // Thêm phương thức để tạo dữ liệu mẫu nếu bảng revenue đang trống
     public function generateSampleDataIfEmpty() {
         try {
             // Kiểm tra xem bảng đã có dữ liệu chưa
@@ -72,6 +77,7 @@ class Revenue {
             
             $this->pdo->beginTransaction();
             
+            // Lặp qua từng ngày, tạo doanh thu ngẫu nhiên cho mỗi ngày
             for ($date = strtotime($start_date); $date <= strtotime($end_date); $date = strtotime('+1 day', $date)) {
                 $current_date = date('Y-m-d', $date);
                 $amount = rand(500000, 5000000); // Random amount
@@ -87,6 +93,7 @@ class Revenue {
             error_log('Generated sample revenue data');
             
         } catch (PDOException $e) {
+            // Nếu có lỗi, rollback transaction nếu đang trong transaction
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
@@ -94,4 +101,5 @@ class Revenue {
         }
     }
 }
+// Kết thúc class Revenue
 ?>

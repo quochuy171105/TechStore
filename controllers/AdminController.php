@@ -6,12 +6,15 @@ require_once 'models/Product.php';
 require_once 'models/Order.php';
 require_once 'models/Revenue.php';
 
+// Controller quản trị tổng hợp cho admin (dashboard, đăng nhập, đăng ký, quên mật khẩu, ...)
 class AdminController {
+    // Các thuộc tính lưu kết nối PDO và các model
     private $pdo;
     private $productModel;
     private $orderModel;
     private $revenueModel;
 
+    // Hàm khởi tạo controller, khởi tạo kết nối DB và các model
     public function __construct() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -22,29 +25,31 @@ class AdminController {
         $this->revenueModel = new Revenue($this->pdo);
     }
 
+    // Trang dashboard tổng quan cho admin
     public function index() {
+        // Kiểm tra quyền truy cập admin
         if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             header('Location: ' . BASE_URL . 'admin.php?url=login');
             exit;
         }
 
-        // Tổng doanh thu
+        // Lấy tổng doanh thu
         $total_revenue = $this->revenueModel->getTotalRevenue() ?? 0;
         error_log('Total revenue: ' . $total_revenue);
 
-        // Tổng đơn hàng
+        // Lấy tổng số đơn hàng
         $total_orders = $this->orderModel->countAll();
         error_log('Total orders: ' . $total_orders);
 
-        // Tổng sản phẩm
+        // Lấy tổng số sản phẩm
         $total_products = $this->productModel->countAll();
         error_log('Total products: ' . $total_products);
 
-        // Tổng khách hàng
+        // Lấy tổng số khách hàng
         $total_users = $this->pdo->query("SELECT COUNT(*) FROM users WHERE role = 'customer'")->fetchColumn();
         error_log('Total users: ' . $total_users);
 
-        // Danh sách khách hàng
+        // Lấy danh sách khách hàng (có tìm kiếm, phân trang)
         $search = isset($_GET['search_customer']) ? trim($_GET['search_customer']) : '';
         $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
         $items_per_page = 5;
@@ -72,7 +77,7 @@ class AdminController {
             $customers = [];
         }
 
-        // Tổng số khách hàng cho phân trang
+        // Đếm tổng số khách hàng cho phân trang
         $total_customers_query = "SELECT COUNT(*) FROM users WHERE role = 'customer'";
         if ($search) {
             $total_customers_query .= " AND (name LIKE :search OR email LIKE :search)";
@@ -86,7 +91,7 @@ class AdminController {
         $total_customer_pages = ceil($total_customers / $items_per_page);
         error_log('Total customers: ' . $total_customers . ', Pages: ' . $total_customer_pages);
 
-        // Thống kê đơn hàng theo trạng thái
+        // Thống kê số lượng đơn hàng theo từng trạng thái
         $order_status_counts = [
             'pending' => 0,
             'processing' => 0,
@@ -107,7 +112,7 @@ class AdminController {
             error_log('Error fetching order status counts: ' . $e->getMessage());
         }
 
-        // Doanh thu 7 ngày gần nhất
+        // Lấy doanh thu 7 ngày gần nhất
         $end_date = date('Y-m-d');
         $start_date = date('Y-m-d', strtotime('-6 days')); // 7 ngày
         try {
@@ -118,6 +123,7 @@ class AdminController {
             $recent_revenue = [];
         }
 
+        // Chuẩn bị dữ liệu truyền sang view dashboard
         $data = [
             'total_revenue' => $total_revenue,
             'total_orders' => $total_orders,
@@ -134,8 +140,10 @@ class AdminController {
         include VIEWS_PATH . 'admin/dashboard.php';
     }
 
+    // Đăng ký tài khoản admin mới
     public function register() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Lấy dữ liệu từ form POST
             $name = trim($_POST['name'] ?? '');
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
             $phone = trim($_POST['phone'] ?? '');
@@ -146,27 +154,23 @@ class AdminController {
             $postal_code = trim($_POST['postal_code'] ?? '');
             $country = trim($_POST['country'] ?? 'Vietnam');
 
-            // Validation
+            // Mảng lưu lỗi validate
             $errors = [];
 
-            // Validate required fields
+            // Validate các trường bắt buộc
             if (empty($name) || strlen($name) < 2) {
                 $errors[] = "Họ tên phải có ít nhất 2 ký tự.";
             }
-
             if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $errors[] = "Email không hợp lệ.";
             }
-
             if (empty($phone) || !preg_match('/^(0[3|5|7|8|9])+([0-9]{8})$/', $phone)) {
                 $errors[] = "Số điện thoại không hợp lệ (VD: 0901234567).";
             }
-
             if (empty($password) || strlen($password) < 6) {
                 $errors[] = "Mật khẩu phải có ít nhất 6 ký tự.";
             }
-
-            // Validate password strength
+            // Kiểm tra độ mạnh mật khẩu
             if (!empty($password)) {
                 if (!preg_match('/[A-Z]/', $password)) {
                     $errors[] = "Mật khẩu phải chứa ít nhất 1 chữ hoa.";
@@ -178,12 +182,11 @@ class AdminController {
                     $errors[] = "Mật khẩu phải chứa ít nhất 1 số.";
                 }
             }
-
             if ($password !== $confirm_password) {
                 $errors[] = "Mật khẩu xác nhận không khớp.";
             }
 
-            // Check if email already exists
+            // Kiểm tra email đã tồn tại chưa
             try {
                 $check_email_query = "SELECT COUNT(*) FROM users WHERE email = :email";
                 $stmt = $this->pdo->prepare($check_email_query);
@@ -197,7 +200,7 @@ class AdminController {
                 error_log("Error checking email: " . $e->getMessage());
             }
 
-            // Check if phone already exists
+            // Kiểm tra số điện thoại đã tồn tại chưa
             try {
                 $check_phone_query = "SELECT COUNT(*) FROM users WHERE phone = :phone";
                 $stmt = $this->pdo->prepare($check_phone_query);
@@ -211,20 +214,21 @@ class AdminController {
                 error_log("Error checking phone: " . $e->getMessage());
             }
 
+            // Nếu có lỗi, hiển thị lại form đăng ký
             if (!empty($errors)) {
                 $error = implode('<br>', $errors);
                 include VIEWS_PATH . 'admin/register.php';
                 return;
             }
 
-            // Hash password
+            // Hash mật khẩu
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
             try {
-                // Begin transaction
+                // Bắt đầu transaction
                 $this->pdo->beginTransaction();
 
-                // Insert user
+                // Thêm user mới vào bảng users
                 $user_query = "INSERT INTO users (name, email, phone, password, role, created_at, updated_at) 
                               VALUES (:name, :email, :phone, :password, 'admin', NOW(), NOW())";
                 $stmt = $this->pdo->prepare($user_query);
@@ -236,7 +240,7 @@ class AdminController {
 
                 $user_id = $this->pdo->lastInsertId();
 
-                // Insert address if provided
+                // Thêm địa chỉ nếu có nhập
                 if (!empty($address_line) || !empty($city)) {
                     $address_query = "INSERT INTO addresses (user_id, address_line, city, postal_code, country, is_default) 
                                      VALUES (:user_id, :address_line, :city, :postal_code, :country, 1)";
@@ -252,16 +256,16 @@ class AdminController {
                 // Commit transaction
                 $this->pdo->commit();
 
-                // Log successful registration
+                // Log đăng ký thành công
                 error_log("New admin registered: ID=$user_id, Email=$email, Name=$name");
 
-                // Redirect to login with success message
+                // Chuyển hướng về trang đăng nhập với thông báo thành công
                 $_SESSION['registration_success'] = "Đăng ký thành công! Vui lòng đăng nhập.";
                 header('Location: ' . BASE_URL . 'admin.php?url=login');
                 exit;
 
             } catch (PDOException $e) {
-                // Rollback transaction
+                // Rollback nếu có lỗi
                 $this->pdo->rollBack();
                 $error = "Lỗi khi tạo tài khoản: " . $e->getMessage();
                 error_log("Registration error: " . $e->getMessage());
@@ -273,8 +277,9 @@ class AdminController {
         }
     }
 
+    // Đăng nhập admin
     public function login() {
-        // Check for registration success message
+        // Hiển thị thông báo đăng ký thành công nếu có
         if (isset($_SESSION['registration_success'])) {
             $success = $_SESSION['registration_success'];
             unset($_SESSION['registration_success']);
@@ -305,36 +310,33 @@ class AdminController {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($user && password_verify($password, $user['password'])) {
-                    // Regenerate session ID for security
+                    // Đăng nhập thành công, tạo session
                     session_regenerate_id(true);
-                    
                     $_SESSION['user'] = $user;
                     $_SESSION['login_time'] = time();
 
-                    // Update last login time
+                    // Cập nhật thời gian đăng nhập cuối
                     $update_query = "UPDATE users SET updated_at = NOW() WHERE id = :user_id";
                     $stmt = $this->pdo->prepare($update_query);
                     $stmt->bindParam(':user_id', $user['id'], PDO::PARAM_INT);
                     $stmt->execute();
 
-                    // Handle remember me functionality
+                    // Xử lý "remember me" nếu có
                     if ($remember_me) {
                         $token = bin2hex(random_bytes(32));
-                        $expire = time() + (30 * 24 * 60 * 60); // 30 days
-                        
-                        // Store token in database (you might want to create a remember_tokens table)
+                        $expire = time() + (30 * 24 * 60 * 60); // 30 ngày
+                        // Lưu token vào cookie (có thể lưu vào DB nếu muốn)
                         setcookie('remember_admin', $token, $expire, '/', '', true, true);
                     }
 
-                    // Log successful login
+                    // Log đăng nhập thành công
                     error_log("Admin login successful: " . $user['email']);
 
-                    // Redirect to dashboard
+                    // Chuyển hướng về dashboard
                     header('Location: ' . BASE_URL . 'admin.php?url=dashboard');
                     exit;
                 } else {
                     $error = "Email hoặc mật khẩu không đúng.";
-                    // Log failed login attempt
                     error_log("Failed login attempt for email: " . $email);
                 }
             } catch (PDOException $e) {
@@ -347,8 +349,9 @@ class AdminController {
         }
     }
 
+    // Đăng xuất admin
     public function logout() {
-        // Clear remember me cookie if it exists
+        // Xóa cookie remember me nếu có
         if (isset($_COOKIE['remember_admin'])) {
             setcookie('remember_admin', '', time() - 3600, '/', '', true, true);
         }
@@ -358,7 +361,7 @@ class AdminController {
             error_log("Admin logout: " . $_SESSION['user']['email']);
         }
 
-        // Clear session
+        // Xóa session
         $_SESSION = [];
         session_destroy();
         
@@ -366,6 +369,7 @@ class AdminController {
         exit;
     }
 
+    // Quên mật khẩu admin (gửi link đặt lại mật khẩu)
     public function forgotPassword() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
@@ -377,7 +381,7 @@ class AdminController {
             }
 
             try {
-                // Check if email exists
+                // Kiểm tra email có tồn tại không
                 $query = "SELECT id, name FROM users WHERE email = :email AND role = 'admin' LIMIT 1";
                 $stmt = $this->pdo->prepare($query);
                 $stmt->bindParam(':email', $email, PDO::PARAM_STR);
@@ -385,17 +389,15 @@ class AdminController {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($user) {
-                    // Generate reset token
+                    // Sinh token đặt lại mật khẩu (chưa lưu vào DB)
                     $token = bin2hex(random_bytes(32));
-                    $expire = date('Y-m-d H:i:s', time() + 3600); // 1 hour
+                    $expire = date('Y-m-d H:i:s', time() + 3600); // 1 giờ
 
-                    // Store token in database (you might want to create a password_resets table)
-                    // For now, we'll just show success message
-                    
+                    // Thông báo thành công (thực tế cần gửi email)
                     $success = "Nếu email tồn tại, chúng tôi đã gửi link đặt lại mật khẩu đến email của bạn.";
                     error_log("Password reset requested for: " . $email);
                 } else {
-                    // Don't reveal if email doesn't exist
+                    // Không tiết lộ email không tồn tại
                     $success = "Nếu email tồn tại, chúng tôi đã gửi link đặt lại mật khẩu đến email của bạn.";
                 }
             } catch (PDOException $e) {
@@ -409,7 +411,7 @@ class AdminController {
         }
     }
 
-    // Helper method to validate password strength
+    // Helper kiểm tra độ mạnh mật khẩu (ít nhất 6 ký tự, có hoa, thường, số)
     private function validatePasswordStrength($password) {
         return strlen($password) >= 6 && 
                preg_match('/[A-Z]/', $password) && 
@@ -417,9 +419,10 @@ class AdminController {
                preg_match('/[0-9]/', $password);
     }
 
-    // Helper method to sanitize input
+    // Helper để làm sạch input (chống XSS)
     private function sanitizeInput($input) {
         return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
     }
 }
+// Kết thúc class AdminController
 ?>
