@@ -356,8 +356,8 @@ include __DIR__ . '/../layouts/header.php';
                 <?php if ($isOrderPending && $paymentMethod === 'chuyển_khoản'): ?>
                     <div class="qr-section">
                         <p>Vui lòng quét mã QR để chuyển khoản:</p>
-                        <?php if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/DoAnCuoiKiLapTrinhWeb/assets/image/maqr2.png")): ?>
-                            <img src="/DoAnCuoiKiLapTrinhWeb/assets/image/maqr2.png" alt="QR Code" class="img-fluid qr-image">
+                        <?php if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/TechStore/assets/image/maqr2.png")): ?>
+                            <img src="/TechStore/assets/image/maqr2.png" alt="QR Code" class="img-fluid qr-image">
                         <?php else: ?>
                             <p class="text-muted">[Không tìm thấy mã QR]</p>
                         <?php endif; ?>

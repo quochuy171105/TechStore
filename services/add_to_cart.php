@@ -1,5 +1,5 @@
 <?php
-// filepath: c:\xampp\htdocs\DoAnCuoiKiLapTrinhWeb\services\add_to_cart.php
+// filepath: c:\xampp\htdocs\TechStore\services\add_to_cart.php
 session_start();
 require_once '../controllers/CartController.php';
 
