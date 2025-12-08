@@ -36,7 +36,8 @@ class AdminOrderController
         $data = [
             'orders' => $orders,
             'current_page' => $page,
-            'total_pages' => $total_pages
+            'total_pages' => $total_pages,
+            'search' => $search
         ];
 
         // Nạp view quản lý đơn hàng

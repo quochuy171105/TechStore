@@ -34,7 +34,8 @@ class AdminController {
         }
 
         // Lấy tổng doanh thu
-        $total_revenue = $this->revenueModel->getTotalRevenue() ?? 0;
+        $total_revenue_data = $this->revenueModel->getTotalRevenueAllTime();
+        $total_revenue = $total_revenue_data['total_revenue'] ?? 0;
         error_log('Total revenue: ' . $total_revenue);
 
         // Lấy tổng số đơn hàng

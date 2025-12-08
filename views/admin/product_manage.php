@@ -5,6 +5,8 @@
 $page_title = 'Quản lý sản phẩm';
 // Nạp header giao diện admin (chứa menu, css, js chung)
 include VIEWS_PATH . 'layouts/admin_header.php';
+// Giải nén mảng data để dễ sử dụng các biến trong view
+if (isset($data) && is_array($data)) { extract($data); }
 ?>
 <div class="container-fluid py-4">
     <h2 class="mb-4">Quản lý sản phẩm</h2>
@@ -30,7 +32,7 @@ include VIEWS_PATH . 'layouts/admin_header.php';
         <form action="<?php echo BASE_URL; ?>admin.php?url=products" method="get" class="d-flex">
             <input type="hidden" name="url" value="products">
             <input type="text" name="search" class="form-control me-2" placeholder="Tìm kiếm sản phẩm..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
-            <button type="submit" class="btn btn-primary">Tìm</button>
+            <button type="submit" class="btn btn-gradient">Tìm</button>
         </form>
     </div>
     
@@ -93,17 +95,17 @@ include VIEWS_PATH . 'layouts/admin_header.php';
                     <ul class="pagination justify-content-center mt-4">
                         <!-- Nút về trang trước -->
                         <li class="page-item <?php echo $current_page <= 1 ? 'disabled' : ''; ?>">
-                            <a class="page-link" href="<?php echo BASE_URL; ?>admin.php?url=products&page=<?php echo $current_page - 1; ?><?php echo isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : ''; ?>">Trước</a>
+                            <a class="page-link" href="<?php echo BASE_URL; ?>admin.php?url=products&page=<?php echo $current_page - 1; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">Trước</a>
                         </li>
                         <!-- Hiển thị số trang -->
                         <?php for ($i = 1; $i <= $total_pages; $i++): ?>
                             <li class="page-item <?php echo $i == $current_page ? 'active' : ''; ?>">
-                                <a class="page-link" href="<?php echo BASE_URL; ?>admin.php?url=products&page=<?php echo $i; ?><?php echo isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : ''; ?>"><?php echo $i; ?></a>
+                                <a class="page-link" href="<?php echo BASE_URL; ?>admin.php?url=products&page=<?php echo $i; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>"><?php echo $i; ?></a>
                             </li>
                         <?php endfor; ?>
                         <!-- Nút sang trang sau -->
                         <li class="page-item <?php echo $current_page >= $total_pages ? 'disabled' : ''; ?>">
-                            <a class="page-link" href="<?php echo BASE_URL; ?>admin.php?url=products&page=<?php echo $current_page + 1; ?><?php echo isset($_GET['search']) ? '&search=' . urlencode($_GET['search']) : ''; ?>">Sau</a>
+                            <a class="page-link" href="<?php echo BASE_URL; ?>admin.php?url=products&page=<?php echo $current_page + 1; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">Sau</a>
                         </li>
                     </ul>
                 </nav>

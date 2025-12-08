@@ -1,0 +1,79 @@
+
+body {
+    background-color: #f8f9fa;
+}
+
+.auth-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 450px;
+    padding: 40px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.auth-card .text-muted {
+    color: #6c757d !important; /* Bootstrap's default muted color */
+}
+
+.auth-card h2 {
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.auth-card .form-control {
+    height: 50px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 0 20px;
+}
+
+.auth-card .form-control:focus {
+    box-shadow: none;
+    border-color: #008cff;
+}
+
+.auth-card .btn-gradient {
+background: linear-gradient(90deg, #4dd0e1, #0288d1);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    transition: opacity 0.3s ease;
+}
+
+.auth-card .btn-gradient:hover {
+    opacity: 0.9;
+}
+
+.auth-card .link-group {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.auth-card .link-item {
+    color: #008cff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-card .link-item:hover {
+    text-decoration: underline;
+}
+
+.auth-card .error {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    text-align: left;
+    margin-top: 5px;
+}

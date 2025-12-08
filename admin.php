@@ -78,6 +78,13 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
     exit;
 }
 
+// Xử lý route AJAX đặc biệt cho doanh thu
+if ($controller_name === 'get_revenue_data') {
+    $controller = new AdminRevenueController();
+    $controller->getRevenueData();
+    exit;
+}
+
 // Khởi tạo controller tương ứng với route
 $controller = null;
 switch ($controller_name) {

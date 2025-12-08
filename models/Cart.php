@@ -57,4 +57,11 @@ class Cart {
         $stmt->execute();
         return $stmt->rowCount() > 0;
     }
+
+    public function clearByUserId($userId) {
+        $stmt = $this->pdo->prepare("DELETE FROM cart WHERE user_id = :user_id");
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->rowCount() > 0;
+    }
 }

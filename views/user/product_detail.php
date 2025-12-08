@@ -37,8 +37,8 @@ if ($totalFeedback > 0) {
     <div class="container">
         <nav aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="home.php"><i class="fas fa-home"></i> Trang chủ</a></li>
-                <li class="breadcrumb-item"><a href="product_list.php">Sản phẩm</a></li>
+                <li class="breadcrumb-item"><a href="<?= BASE_URL ?>"><i class="fas fa-home"></i> Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="<?= BASE_URL ?>views/user/product_list.php">Sản phẩm</a></li>
                 <li class="breadcrumb-item active"><?= htmlspecialchars($product['name']) ?></li>
             </ol>
         </nav>
@@ -188,7 +188,7 @@ if ($totalFeedback > 0) {
                 <div class="tab-pane fade show active" id="nav-description" role="tabpanel">
                     <div class="tab-content-wrapper">
                         <h4>Mô tả chi tiết sản phẩm</h4>
-                        <p><?= htmlspecialchars($product['description']) ?></p>
+                        <p><?= nl2br(htmlspecialchars($product['description'])) ?></p>
                         <div class="description-features">
                             <h5>Tính năng nổi bật:</h5>
                             <ul class="feature-list">

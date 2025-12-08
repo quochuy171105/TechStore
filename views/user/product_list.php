@@ -28,10 +28,19 @@ include __DIR__ . '/../layouts/header.php';
     <meta name="keywords" content="sản phẩm, công nghệ, điện thoại, laptop, phụ kiện">
     <title>Danh sách sản phẩm - Cửa hàng điện tử</title>
 
-    <h2 class="mb-4">Danh sách sản phẩm</h2>
-    <div class="row">
-        <!-- Bộ lọc -->
-        <div class="col-md-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 position-relative z-index-1">
+        <h2 class="page-title mb-0">Danh sách sản phẩm</h2>
+        <button class="btn btn-gradient w-70 " type="text" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFilter" aria-controls="offcanvasFilter">
+            <i class="fas fa-filter me-2"></i>Bộ lọc
+        </button>
+    </div>
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasFilter" aria-labelledby="offcanvasFilterLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasFilterLabel">Bộ lọc sản phẩm</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
             <form id="filter-form">
                 <div class="mb-3">
                     <label class="form-label">Danh mục</label>
@@ -71,36 +80,33 @@ include __DIR__ . '/../layouts/header.php';
                         <option value="price_desc" <?= $sort == 'price_desc' ? 'selected' : '' ?>>Giá giảm dần</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Lọc</button>
+                <button type="submit" class="btn btn-gradient w-100">Lọc sản phẩm</button>
             </form>
         </div>
+    </div>
+
+    <div class="row">
         <!-- Danh sách sản phẩm -->
-        <div class="col-md-9">
-            <div class="row" id="product-list">
+        <div class="mb-4 text-center">
+            <div class="row mb-4" id="product-list">
                 <?php foreach ($products as $product): ?>
-                    <div class="col-md-4 col-sm-6 mb-3">
-                        <div class="card">
-                            <img src="<?= IMAGES_PATH . htmlspecialchars($product['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['name']) ?>" loading="lazy">
+                    <div class="col-12 col-sm-6 col-md-3 mb-3">
+                        <div class="card product-card h-100">
+                            <div class="product-img-wrapper">
+                                <img src="<?= IMAGES_PATH . htmlspecialchars($product['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['name']) ?>" loading="lazy" onerror="this.src='<?= BASE_URL ?>assets/images/fallback-image.png'">
+                            </div>
                             <div class="card-body">
                                 <h5 class="card-title"><?= htmlspecialchars($product['name']) ?></h5>
-                                <p class="card-text"><?= number_format($product['price'], 2) ?> USD</p>
-                                <a href="<?= BASE_URL ?>views/user/product_detail.php?id=<?= $product['id'] ?>" class="btn btn-primary">Xem chi tiết</a>
+                                <p class="card-text text-danger fw-bold mt-auto"><?= number_format($product['price'], 0, ',', '.') ?> VNĐ</p>
+                                <a href="<?= BASE_URL ?>views/user/product_detail.php?id=<?= htmlspecialchars($product['id']) ?>" class="btn btn-gradient w-100">Xem chi tiết</a>
                             </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
             </div>
-            <!-- Phân trang -->
-            <nav>
-                <ul class="pagination">
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <li class="page-item <?= $page == $i ? 'active' : '' ?>">
-                            <a class="page-link" href="?page=<?= $i ?>&category_id=<?= $category_id ?>&brand_id=<?= $brand_id ?>&price_min=<?= $price_min ?>&price_max=<?= $price_max ?>&sort=<?= $sort ?>"><?= $i ?></a>
-                        </li>
-                    <?php endfor; ?>
-                </ul>
-            </nav>
         </div>
+        <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/categories.css">
     </div>
+
 </div>
 <?php include __DIR__ . '/../layouts/footer.php'; ?>

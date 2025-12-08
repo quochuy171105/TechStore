@@ -91,67 +91,7 @@ include __DIR__ . '/../layouts/header.php';
 <meta charset="UTF-8">
 <title>Lịch Sử Đơn Hàng - Shop TMĐT Điện Thoại</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-    body {
-        background-color: #fff;
-        font-family: 'Inter', sans-serif;
-        margin: 0;
-    }
-
-    .main-section {
-        padding: 30px;
-        min-height: 85vh;
-    }
-
-    h2 {
-        text-align: center;
-        margin-bottom: 30px;
-        font-weight: 600;
-        color: #1a1a1a;
-    }
-
-    .cart-table th {
-        background-color: #f8f9fa;
-    }
-
-    .cart-table img {
-        width: 40px;
-        height: auto;
-        margin-right: 10px;
-        vertical-align: middle;
-    }
-
-    .order-details {
-        margin-top: 20px;
-    }
-
-    .order-header {
-        background-color: #e9ecef;
-        padding: 10px;
-        border-radius: 5px;
-    }
-
-    .highlight {
-        background-color: #fff3cd;
-        border: 2px solid #ffca2c;
-    }
-
-    .btn-rate {
-        background: linear-gradient(to right, #40c4ff, #0288d1);
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 5px;
-        text-decoration: none;
-        display: inline-block;
-        font-weight: 600;
-        transition: background 0.3s ease;
-    }
-
-    .btn-rate:hover {
-        background: linear-gradient(to right, #0288d1, #01579b);
-    }
-</style>
+<!-- Order-history styles moved to assets/css/style.css -->
 
 <div class="main-section container">
     <h2>Lịch sử đơn hàng</h2>
@@ -175,11 +115,11 @@ include __DIR__ . '/../layouts/header.php';
                     <table class="table cart-table">
                         <thead>
                             <tr>
-                                <th>Sản phẩm</th>
-                                <th>Đơn giá</th>
-                                <th>Số lượng</th>
-                                <th>Thành tiền</th>
-                                <th>Hành động</th>
+                                <th style="width: 40%;">Sản phẩm</th>
+                                <th style="width: 15%;">Đơn giá</th>
+                                <th style="width: 15%;">Số lượng</th>
+                                <th style="width: 15%;">Thành tiền</th>
+                                <th style="width: 15%;">Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -187,7 +127,7 @@ include __DIR__ . '/../layouts/header.php';
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="<?= IMAGES_PATH . htmlspecialchars($item['image']) ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                            <img class="product-img me-3" src="<?= IMAGES_PATH . htmlspecialchars($item['image']) ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                             <span><?php echo htmlspecialchars($item['name']); ?></span>
                                         </div>
                                     </td>

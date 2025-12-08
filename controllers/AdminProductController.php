@@ -33,7 +33,8 @@ class AdminProductController {
         $data = [
             'products' => $products,
             'current_page' => $page,
-            'total_pages' => $total_pages
+            'total_pages' => $total_pages,
+            'search' => $search
         ];
 
         // Nạp view quản lý sản phẩm

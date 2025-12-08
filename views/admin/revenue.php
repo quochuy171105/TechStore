@@ -12,31 +12,53 @@ include VIEWS_PATH . 'layouts/admin_header.php';
     <h2 class="mb-4">Thống kê doanh thu</h2>
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
-            <!-- Form lọc doanh thu theo ngày và loại biểu đồ -->
-            <form id="revenue-filter" method="GET" action="<?php echo BASE_URL; ?>admin.php?url=revenue" class="row g-3">
+            <!-- Form lọc doanh thu -->
+            <form id="revenue-filter" class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <!-- Chọn ngày bắt đầu -->
-                    <label for="start_date" class="form-label">Từ ngày</label>
-                    <input type="date" name="start_date" id="start_date" class="form-control" value="<?php echo htmlspecialchars($start_date); ?>" required>
-                </div>
-                <div class="col-md-3">
-                    <!-- Chọn ngày kết thúc -->
-                    <label for="end_date" class="form-label">Đến ngày</label>
-                    <input type="date" name="end_date" id="end_date" class="form-control" value="<?php echo htmlspecialchars($end_date); ?>" required>
-                </div>
-                <div class="col-md-3">
-                    <!-- Chọn loại biểu đồ -->
-                    <label for="chart-type" class="form-label">Loại biểu đồ</label>
-                    <select name="chart_type" id="chart-type" class="form-control">
-                        <option value="line">Đường</option>
-                        <option value="bar">Cột</option>
-                        <option value="area">Khu vực</option>
+                    <label for="filter_type" class="form-label fw-bold">Lọc theo</label>
+                    <select id="filter_type" name="filter_type" class="form-select">
+                        <option value="range" <?php echo (!isset($_GET['filter_type']) || $_GET['filter_type'] == 'range') ? 'selected' : ''; ?>>Khoảng ngày</option>
+                        <option value="month" <?php echo (isset($_GET['filter_type']) && $_GET['filter_type'] == 'month') ? 'selected' : ''; ?>>Theo tháng</option>
+                        <option value="year" <?php echo (isset($_GET['filter_type']) && $_GET['filter_type'] == 'year') ? 'selected' : ''; ?>>Theo năm</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end gap-2">
-                    <!-- Nút lọc và đặt lại -->
-                    <button type="submit" class="btn btn-primary flex-grow-1">Lọc</button>
-                    <button type="button" id="reset-filter" class="btn btn-secondary flex-grow-1">Đặt lại</button>
+
+                <!-- Date Range Filter -->
+                <div class="col-md-6" id="range_filter_group">
+                    <div class="row">
+                        <div class="col">
+                            <label for="start_date" class="form-label">Từ ngày</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control" value="<?php echo htmlspecialchars($_GET['start_date'] ?? date('Y-m-01')); ?>">
+                        </div>
+                        <div class="col">
+                            <label for="end_date" class="form-label">Đến ngày</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control" value="<?php echo htmlspecialchars($_GET['end_date'] ?? date('Y-m-t')); ?>">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Month Filter -->
+                <div class="col-md-2" id="month_filter_group" style="display: none;">
+                    <label for="month" class="form-label">Chọn tháng</label>
+                    <input type="month" name="month" id="month" class="form-control" value="<?php echo htmlspecialchars($_GET['month'] ?? date('Y-m')); ?>">
+                </div>
+
+                <!-- Year Filter -->
+                <div class="col-md-2" id="year_filter_group" style="display: none;">
+                    <label for="year" class="form-label">Chọn năm</label>
+                    <input type="number" name="year" id="year" class="form-control" min="2020" max="<?php echo date('Y'); ?>" value="<?php echo htmlspecialchars($_GET['year'] ?? date('Y')); ?>">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="chart-type" class="form-label">Loại biểu đồ</label>
+                    <select name="chart_type" id="chart-type" class="form-select">
+                        <option value="bar" <?php echo (isset($_GET['chart_type']) && $_GET['chart_type'] == 'bar') ? 'selected' : ''; ?>>Cột</option>
+                        <option value="line" <?php echo (isset($_GET['chart_type']) && $_GET['chart_type'] == 'line') ? 'selected' : ''; ?>>Đường</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-gradient w-100">Lọc</button>
                 </div>
             </form>
         </div>

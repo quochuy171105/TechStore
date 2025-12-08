@@ -258,118 +258,9 @@ include __DIR__ . '/../layouts/header.php';
 <meta charset="UTF-8">
 <title>Thanh Toán - Shop TMĐT Điện Thoại</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-    .main-content {
-        padding: 30px 0;
-    }
-
-    .form-section,
-    .summary-section {
-        background-color: #fff;
-        border-radius: 12px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-        padding: 25px;
-    }
-
-    h2 {
-        font-size: 1.8rem;
-        font-weight: 600;
-        text-align: center;
-        margin-bottom: 30px;
-    }
-
-    .btn-checkout {
-        background: linear-gradient(to right, #40c4ff, #0288d1);
-        color: #fff;
-        font-weight: 600;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        transition: background 0.3s ease;
-    }
-
-    .btn-checkout:hover {
-        background: linear-gradient(to right, #0288d1, #01579b);
-    }
-
-    .btn-confirm-payment {
-        background: linear-gradient(to right, #28a745, #218838);
-        color: #fff;
-        font-weight: 600;
-        padding: 10px;
-        border: none;
-        border-radius: 8px;
-        transition: background 0.3s ease;
-    }
-
-    .btn-confirm-payment:hover {
-        background: linear-gradient(to right, #218838, #1e7e34);
-    }
-
-    .product-img {
-        width: 60px;
-        height: 60px;
-        object-fit: contain;
-        border-radius: 8px;
-        margin-right: 10px;
-    }
-
-    .product-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .product-details {
-        display: flex;
-        align-items: center;
-    }
-
-    .price-details {
-        margin: 20px 0;
-    }
-
-    .price-detail {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-    }
-
-    .price-detail .label {
-        font-weight: bold;
-    }
-
-    .price-detail .value {
-        font-weight: bold;
-        color: #000;
-    }
-
-    .price-detail.discount {
-        color: #ff0000;
-    }
-
-    .final-price {
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #000;
-        border-top: 1px solid #ddd;
-        padding-top: 10px;
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .qr-section {
-        text-align: center;
-        margin-top: 20px;
-        padding: 20px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-    }
-</style>
 
 <div class="main-content container">
-    <h2>Thanh toán đơn hàng</h2>
+    <h2 class="page-title">Thanh toán đơn hàng</h2>
     <div class="row g-4">
         <!-- Form Thông Tin Giao Hàng -->
         <div class="col-md-7">
@@ -418,7 +309,7 @@ include __DIR__ . '/../layouts/header.php';
                             <span class="value" id="original-price"><?php echo number_format($originalTotalPrice, 0, ',', '.'); ?>đ</span>
                         </div>
                         <!-- ✅ SỬA: Hiển thị mã giảm giá nếu đã chọn -->
-                        <div class="price-detail discount" id="discount-section" style="<?php echo $discountAmount > 0 ? 'display: flex;' : 'display: none;'; ?>">
+                        <div class="price-detail discount <?php echo $discountAmount > 0 ? '' : 'hidden'; ?>" id="discount-section">
                             <span class="label">Mã giảm giá</span>
                             <span class="value" id="discount-amount">
                                 <?php if ($discountAmount > 0): ?>
@@ -431,7 +322,7 @@ include __DIR__ . '/../layouts/header.php';
                             <span id="final-price"><?php echo number_format($finalTotalPrice, 0, ',', '.'); ?>đ</span>
                         </div>
                     </div>
-                    <button type="submit" name="confirm_order" class="btn btn-checkout w-100">Xác nhận đặt hàng</button>
+                    <button type="submit" name="confirm_order" id="confirm-order-btn" class="btn btn-checkout w-100">Xác nhận đặt hàng</button>
                 </form>
             </div>
         </div>
@@ -466,13 +357,13 @@ include __DIR__ . '/../layouts/header.php';
                     <div class="qr-section">
                         <p>Vui lòng quét mã QR để chuyển khoản:</p>
                         <?php if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/DoAnCuoiKiLapTrinhWeb/assets/image/maqr2.png")): ?>
-                            <img src="/DoAnCuoiKiLapTrinhWeb/assets/image/maqr2.png" alt="QR Code" class="img-fluid" style="max-width:200px;">
+                            <img src="/DoAnCuoiKiLapTrinhWeb/assets/image/maqr2.png" alt="QR Code" class="img-fluid qr-image">
                         <?php else: ?>
                             <p class="text-muted">[Không tìm thấy mã QR]</p>
                         <?php endif; ?>
 
-                        <button id="confirm-payment-btn" class="btn btn-confirm-payment w-100 mt-3">Xác nhận thanh toán</button>
-                        <div id="payment-status" class="alert alert-info mt-2" style="display: none;">
+                        <button id="confirm-payment-btn" class="btn btn-success w-100 mt-3 d-flex justify-content-center">Xác nhận thanh toán</button>
+                        <div id="payment-status" class="alert alert-info mt-2 hidden">
                             Đơn hàng đang chờ xác nhận thanh toán. Vui lòng liên hệ nếu cần hỗ trợ.
                         </div>
                     </div>
@@ -530,8 +421,14 @@ include __DIR__ . '/../layouts/header.php';
         // Xử lý nút "Xác nhận thanh toán"
         const confirmPaymentBtn = document.getElementById('confirm-payment-btn');
         const paymentStatus = document.getElementById('payment-status');
+        const confirmOrderBtn = document.getElementById('confirm-order-btn');
 
         if (confirmPaymentBtn) {
+            // Ẩn nút "Xác nhận đặt hàng" ban đầu nếu nút xác nhận thanh toán hiển thị
+            if (confirmOrderBtn) {
+                confirmOrderBtn.style.display = 'none';
+            }
+
             confirmPaymentBtn.addEventListener('click', function() {
                 // Vô hiệu hóa nút để tránh nhấn lại
                 confirmPaymentBtn.disabled = true;
@@ -572,7 +469,7 @@ include __DIR__ . '/../layouts/header.php';
                                 paymentStatus.classList.remove('alert-info');
                                 paymentStatus.classList.add('alert-danger');
                                 paymentStatus.textContent = 'Lỗi: ' + data.message;
-                                paymentStatus.style.display = 'block';
+                                paymentStatus.classList.remove('hidden');
                                 confirmPaymentBtn.disabled = false;
                                 confirmPaymentBtn.textContent = 'Xác nhận thanh toán';
                             }
@@ -581,7 +478,7 @@ include __DIR__ . '/../layouts/header.php';
                             paymentStatus.classList.remove('alert-info');
                             paymentStatus.classList.add('alert-danger');
                             paymentStatus.textContent = 'Lỗi server: ' + error;
-                            paymentStatus.style.display = 'block';
+                            paymentStatus.classList.remove('hidden');
                             confirmPaymentBtn.disabled = false;
                             confirmPaymentBtn.textContent = 'Xác nhận thanh toán';
                         });

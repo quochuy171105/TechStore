@@ -22,374 +22,14 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 ?>
 <?php include __DIR__ . '/../layouts/header.php'; ?>
 
-<!-- Custom CSS for account page -->
-<style>
-  body { 
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh; 
-    padding: 0px 0;
-  }
-  
-  .account-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 15px;
-  }
-  
-  .account-header {
-    text-align: center;
-    margin-bottom: 40px;
-    color: white;
-  }
-  
-  .account-header h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  }
-  
-  .account-header p {
-    font-size: 1.1rem;
-    opacity: 0.9;
-    margin: 0;
-  }
-  
-  .account-box { 
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    padding: 0;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-  
-  .nav-tabs { 
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    padding: 25px 30px 0;
-    margin: 0;
-    border-bottom: none;
-    justify-content: center;
-    gap: 8px;
-  }
-  
-  .nav-tabs .nav-link { 
-    border: none; 
-    padding: 12px 24px; 
-    border-radius: 16px; 
-    background: rgba(255, 255, 255, 0.7);
-    color:rgb(78, 73, 73); 
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-weight: 500;
-    font-size: 0.95rem;
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(10px);
-  }
-  
-  .nav-tabs .nav-link:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
-    transition: left 0.5s;
-  }
-  
-  .nav-tabs .nav-link:hover { 
-    background: rgba(255, 255, 255, 0.9);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-  }
-  
-  .nav-tabs .nav-link:hover:before {
-    left: 100%;
-  }
-  
-  .nav-tabs .nav-link.active { 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white; 
-    font-weight: 600;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-  }
-  
-  .tab-content { 
-    background: white;
-    padding: 40px;
-    margin: 0;
-    min-height: 500px;
-  }
-  
-  .form-control { 
-    border-radius: 12px;
-    border: 2px solid #e2e8f0;
-    padding: 12px 16px;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    background: rgba(248, 250, 252, 0.5);
-  }
-  
-  .form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    background: white;
-  }
-  
-  .form-label {
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-  }
-  
-  .btn-gradient { 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white; 
-    font-weight: 600; 
-    padding: 12px 28px; 
-    border-radius: 12px; 
-    border: none; 
-    transition: all 0.3s ease;
-    font-size: 0.95rem;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .btn-gradient:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-  }
-  
-  .btn-gradient:hover { 
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-  }
-  
-  .btn-gradient:hover:before {
-    left: 100%;
-  }
-  
-  .address-item {
-    border-radius: 16px !important;
-    transition: all 0.3s ease;
-    background: rgba(248, 250, 252, 0.5);
-    backdrop-filter: blur(10px);
-  }
-  
-  .address-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.1) !important;
-  }
-  
-  .address-item.border-default {
-    border: 2px solid #667eea !important;
-    background: rgba(102, 126, 234, 0.05);
-  }
-  
-  .card-body {
-    padding: 24px;
-  }
-  
-  .btn-outline-secondary, .btn-outline-primary, .btn-outline-danger {
-    border-radius: 8px;
-    font-weight: 500;
-    padding: 6px 12px;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-  }
-  
-  .btn-outline-secondary:hover {
-    background: #6c757d;
-    transform: translateY(-1px);
-  }
-  
-  .btn-outline-primary:hover {
-    background: #667eea;
-    transform: translateY(-1px);
-  }
-  
-  .btn-outline-danger:hover {
-    background: #ef4444;
-    transform: translateY(-1px);
-  }
-  
-  .badge {
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-weight: 500;
-    font-size: 0.8rem;
-  }
-  
-  .bg-info {
-    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
-  }
-  
-  .edit-form-container {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
-    border-radius: 16px !important;
-    border: 1px solid rgba(102, 126, 234, 0.1);
-  }
-  
-  .form-error { 
-    color: #ef4444; 
-    font-size: 0.85rem; 
-    margin-top: 6px;
-    font-weight: 500;
-  }
-  
-  #info-message, #address-msg { 
-    margin-top: 16px;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-weight: 500;
-  }
-  
-  .text-muted {
-    color: #64748b !important;
-  }
-  
-  hr {
-    border: none;
-    height: 2px;
-    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-    margin: 32px 0;
-    border-radius: 2px;
-  }
-  
-  .promotion-card, .feedback-card {
-    border-radius: 16px;
-    transition: all 0.3s ease;
-    background: rgba(248, 250, 252, 0.5);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(226, 232, 240, 0.8);
-  }
-  
-  .promotion-card:hover, .feedback-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.1);
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .account-header h1 {
-      font-size: 2rem;
-    }
-    
-    .account-box {
-      margin: 20px 10px;
-      border-radius: 20px;
-    }
-    
-    .nav-tabs {
-      padding: 20px 15px 0;
-      flex-wrap: wrap;
-    }
-    
-    .nav-tabs .nav-link {
-      padding: 10px 16px;
-      font-size: 0.9rem;
-      margin-bottom: 8px;
-    }
-    
-    .tab-content {
-      padding: 25px 20px;
-    }
-    
-    .card-body {
-      padding: 20px;
-    }
-    
-    .btn-group {
-      flex-direction: column;
-      width: 100%;
-    }
-    
-    .btn-group .btn {
-      margin-bottom: 4px;
-    }
-  }
-  
-  @media (max-width: 575px) {
-    .account-container {
-      padding: 0 10px;
-    }
-    
-    .account-header {
-      margin-bottom: 20px;
-    }
-    
-    .account-header h1 {
-      font-size: 1.75rem;
-    }
-    
-    .nav-tabs {
-      padding: 15px 10px 0;
-    }
-    
-    .nav-tabs .nav-link {
-      padding: 8px 12px;
-      font-size: 0.85rem;
-    }
-    
-    .tab-content {
-      padding: 20px 15px;
-    }
-  }
-  
-  /* Animation cho form elements */
-  .form-control, .btn, .card {
-    animation: fadeInUp 0.6s ease-out;
-  }
-  
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Loading states */
-  .btn-gradient:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    transform: none;
-  }
-  
-  .btn-gradient:disabled:hover {
-    transform: none;
-    box-shadow: none;
-  }
-  .nav-tabs .nav-link {
-    color: #222 !important;
-    background: rgba(255,255,255,0.85);
-    font-weight: 600;
-    opacity: 1 !important;
-}
-</style>
-
 <div class="account-container">
   <div class="account-header">
-    <h1>Quản lý tài khoản</h1>
-    <p>Cập nhật thông tin cá nhân và quản lý tài khoản của bạn</p>
+    <h2 class="page-title">Quản lý tài khoản</h2>
+    <p class="text-muted">Cập nhật thông tin cá nhân và quản lý tài khoản của bạn</p>
   </div>
 
   <div class="account-box">
-    <ul class="nav nav-tabs mb-0" id="accountTab" role="tablist">
+    <ul class="nav nav-tabs custom-tabs mb-0" id="accountTab" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">
           <i class="bi bi-person-circle me-2"></i>Thông tin cá nhân
@@ -474,17 +114,17 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
           }
           if (empty($addresses)) {
             echo '<div class="text-center py-5">';
-            echo '<i class="bi bi-geo-alt-fill" style="font-size: 3rem; color: #cbd5e1;"></i>';
+            echo '<i class="bi bi-geo-alt-fill icon-large"></i>';
             echo '<p class="text-muted mt-3 mb-4">Bạn chưa có địa chỉ nào. Vui lòng thêm địa chỉ giao hàng:</p>';
             echo '</div>';
           } else {
             foreach ($addresses as $ad) {
               $default = $ad['is_default'];
-              echo '<div class="card mb-3 shadow-sm address-item" data-id="'.$ad['id'].'" style="border:'.($default?'2px solid #667eea;':'1px solid #e2e8f0;').'">';
+              echo '<div class="card mb-3 shadow-sm address-item '.($default ? 'border-default' : '').'" data-id="'.$ad['id'].'">';
               echo    '<div class="card-body d-flex justify-content-between align-items-center flex-wrap">';
               echo        '<div class="flex-grow-1">';
-              echo            '<div style="font-size:17px;font-weight:600;color:#374151">'.htmlspecialchars($ad['address_line']).'</div>';
-              echo            '<div class="text-muted" style="font-size:15px">'.htmlspecialchars($ad['city']).', '.htmlspecialchars($ad['country']);
+              echo            '<div class="addr-title">'.htmlspecialchars($ad['address_line']).'</div>';
+              echo            '<div class="text-muted addr-sub">'.htmlspecialchars($ad['city']).', '.htmlspecialchars($ad['country']);
               if ($ad['postal_code']) echo ', '.htmlspecialchars($ad['postal_code']);
               echo            '</div>';
               if ($default) echo '<span class="badge bg-info mt-2"><i class="bi bi-star-fill me-1"></i>Mặc định</span>';
@@ -507,7 +147,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
               echo        '</div>';
               echo    '</div>';
               // Khung sửa inline (ẩn mặc định)
-              echo    '<div class="edit-form-container" style="display:none; padding:24px; margin:12px;">';
+              echo    '<div class="edit-form-container">';
               echo      '<form class="edit-address-form" method="post" data-id="'.$ad['id'].'">';
               echo        '<div class="row g-3 align-items-end">';
               echo          '<div class="col-12 col-md-5">';
@@ -552,7 +192,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
         <hr>
         
         <!-- FORM ADD ADDRESS (AJAX) -->
-        <div class="card" style="border: 2px dashed #cbd5e1; background: rgba(248, 250, 252, 0.5);">
+        <div class="card add-address-card">
           <div class="card-body">
             <h5 class="card-title mb-3">
               <i class="bi bi-plus-circle me-2"></i>Thêm địa chỉ mới

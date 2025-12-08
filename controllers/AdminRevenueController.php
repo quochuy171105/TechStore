@@ -57,6 +57,75 @@ class AdminRevenueController {
             include VIEWS_PATH . 'admin/revenue.php';
         }
     }
+
+    // Lấy dữ liệu doanh thu cho AJAX request
+    public function getRevenueData() {
+        header('Content-Type: application/json');
+        try {
+            $filterType = $_GET['filter_type'] ?? 'range';
+
+            $labels = [];
+            $data = [];
+
+            switch ($filterType) {
+                case 'month':
+                    $month = $_GET['month'] ?? date('Y-m');
+                    $startDate = date('Y-m-01', strtotime($month));
+                    $endDate = date('Y-m-t', strtotime($month));
+                    $revenueData = $this->revenueModel->getRevenueByDateRange($startDate, $endDate);
+                    foreach ($revenueData as $row) {
+                        $labels[] = date('d/m', strtotime($row['date']));
+                        $data[] = (float)$row['total'];
+                    }
+                    break;
+
+                case 'year':
+                    $year = $_GET['year'] ?? date('Y');
+                    
+                    // Khởi tạo mảng 12 tháng với doanh thu bằng 0
+                    $monthlyData = array_fill(1, 12, 0);
+                    
+                    // Lấy dữ liệu doanh thu từ model
+                    $revenueData = $this->revenueModel->getRevenueByYear($year);
+                    
+                    // Cập nhật doanh thu cho các tháng có dữ liệu
+                    foreach ($revenueData as $row) {
+                        $monthlyData[(int)$row['month']] = (float)$row['monthly_revenue'];
+                    }
+                    
+                    // Chuẩn bị labels và data cho biểu đồ
+                    $labels = [];
+                    for ($m = 1; $m <= 12; $m++) {
+                        $labels[] = 'Tháng ' . $m;
+                    }
+                    $data = array_values($monthlyData);
+                    break;
+
+                default: // range
+                    $startDate = $_GET['start_date'] ?? date('Y-m-01');
+                    $endDate = $_GET['end_date'] ?? date('Y-m-t');
+                    $revenueData = $this->revenueModel->getRevenueByDateRange($startDate, $endDate);
+                    foreach ($revenueData as $row) {
+                        $labels[] = date('d/m/Y', strtotime($row['date']));
+                        $data[] = (float)$row['total'];
+                    }
+                    break;
+            }
+
+            $totalRevenue = array_sum($data);
+
+            echo json_encode([
+                'labels' => $labels,
+                'data' => $data,
+                'totalRevenue' => $totalRevenue
+            ]);
+        } catch (Exception $e) {
+            error_log('Error in getRevenueData: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['error' => 'Lỗi máy chủ nội bộ']);
+        }
+        exit;
+    }
 }
 // Kết thúc class AdminRevenueController
 ?>

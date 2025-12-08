@@ -122,7 +122,7 @@ class Product
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function searchProducts($query, $category_id = 0)
+    public function searchProducts($query, $category_id = 0, $limit = null)
     {
         $where = [];
         $params = [];
@@ -142,10 +142,20 @@ class Product
             JOIN categories c ON p.category_id = c.id 
             $where_clause 
             ORDER BY p.created_at DESC";
+
+        if ($limit) {
+            $sql .= " LIMIT :limit";
+        }
+
         $stmt = $this->pdo->prepare($sql);
         foreach ($params as $key => $value) {
             $stmt->bindValue($key, $value);
         }
+
+        if ($limit) {
+            $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        }
+
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -176,14 +186,14 @@ class Product
     public function getAll($page = 1, $items_per_page = ITEMS_PER_PAGE, $search = '')
     {
         $offset = ($page - 1) * $items_per_page;
-        $query = "SELECT p.*, c.name as category_name, b.name as brand_name 
+        $query = "SELECT p.id, p.name, p.description, p.price, p.stock, c.name as category_name, b.name as brand_name 
                   FROM products p 
                   JOIN categories c ON p.category_id = c.id 
                   JOIN brands b ON p.brand_id = b.id";
         if ($search) {
             $query .= " WHERE p.name LIKE :search";
         }
-        $query .= " LIMIT :offset, :items_per_page";
+        $query .= " ORDER BY p.created_at DESC LIMIT :offset, :items_per_page";
 
         $stmt = $this->pdo->prepare($query);
         if ($search) {

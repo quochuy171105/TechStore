@@ -42,20 +42,51 @@ $categories = (new Category($db))->getAllCategories();
     </div>
 
     <!-- Danh mục gợi ý -->
-    <h3 class="mb-4 text-center">Danh mục sản phẩm</h3>
+    <h3 class="mb-4 text-center">Khám phá danh mục</h3>
     <div class="row mb-4">
         <?php foreach ($categories as $category): ?>
             <div class="col-6 col-sm-6 col-md-3 mb-3">
-                <a href="<?= BASE_URL ?>views/user/product_list.php?category_id=<?= htmlspecialchars($category['id']) ?>" class="card category-card text-center text-decoration-none">
-                    <div class="card-body">
-                        <h5 class="card-title"><?= htmlspecialchars($category['name']) ?></h5>
+                <a href="<?= BASE_URL ?>views/user/product_list.php?category_id=<?= htmlspecialchars($category['id']) ?>" class="card category-card text-center text-decoration-none h-100 d-flex align-items-center justify-content-center">
+                    <div class="card-body p-3 d-flex align-items-center justify-content-center">
+                        <h5 class="card-title mb-0 text-truncate" title="<?= htmlspecialchars($category['name']) ?>" style="color:#222; font-size:1rem; font-weight:500; width:100%;">
+                            <?= htmlspecialchars($category['name']) ?>
+                        </h5>
                     </div>
                 </a>
             </div>
         <?php endforeach; ?>
     </div>
-
-
+    <style>
+        .category-card {
+            border-radius: 1rem;
+            background: #fff;
+            border: 1px solid #e3e6ea;
+            box-shadow: 0 1px 4px 0 #0000000d;
+            transition: box-shadow 0.15s, border 0.15s;
+            min-height: 60px;
+        }
+        .category-card:hover, .category-card:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 2px 12px 0 #0d6efd22;
+            text-decoration: none;
+        }
+        .category-card .card-body {
+            padding: 0.8rem 0.5rem;
+        }
+        .category-card .card-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        @media (max-width: 576px) {
+            .category-card .card-body {
+                padding: 0.6rem 0.3rem;
+            }
+            .category-card .card-title {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
 
     <!-- Sản phẩm nổi bật -->
     <h3 class="mb-4 text-center">Sản phẩm nổi bật</h3>
@@ -68,7 +99,7 @@ $categories = (new Category($db))->getAllCategories();
                     </div>
                     <div class="card-body">
                         <h5 class="card-title"><?= htmlspecialchars($product['name']) ?></h5>
-                        <p class="card-text"><?= number_format($product['price'], 0, ',', '.') ?> VNĐ</p>
+                        <p class="card-text text-danger fw-bold mt-auto"><?= number_format($product['price'], 0, ',', '.') ?> VNĐ</p>
                         <a href="<?= BASE_URL ?>views/user/product_detail.php?id=<?= htmlspecialchars($product['id']) ?>" class="btn btn-gradient w-100">Xem chi tiết</a>
                     </div>
                 </div>
@@ -77,17 +108,17 @@ $categories = (new Category($db))->getAllCategories();
     </div>
 
     <!-- Sản phẩm đề xuất -->
-    <h3 class="mb-4 text-center">Sản phẩm đề xuất</h3>
-    <div class="row mb-4">
+    <h3 class="mb-4 text-center">Dành cho bạn</h3>
+     <div class="row mb-4" id="product-list">
         <?php foreach ($recommendedProducts as $product): ?>
-            <div class="col-6 col-sm-6 col-md-3 mb-3">
+            <div class="col-12 col-sm-6 col-md-3 mb-3">
                 <div class="card product-card h-100">
                     <div class="product-img-wrapper">
                         <img src="<?= IMAGES_PATH . htmlspecialchars($product['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['name']) ?>" loading="lazy" onerror="this.src='<?= BASE_URL ?>assets/images/fallback-image.png'">
                     </div>
                     <div class="card-body">
                         <h5 class="card-title"><?= htmlspecialchars($product['name']) ?></h5>
-                        <p class="card-text"><?= number_format($product['price'], 0, ',', '.') ?> VNĐ</p>
+                        <p class="card-text text-danger fw-bold mt-auto"><?= number_format($product['price'], 0, ',', '.') ?> VNĐ</p>
                         <a href="<?= BASE_URL ?>views/user/product_detail.php?id=<?= htmlspecialchars($product['id']) ?>" class="btn btn-gradient w-100">Xem chi tiết</a>
                     </div>
                 </div>

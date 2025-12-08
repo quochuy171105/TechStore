@@ -2,43 +2,77 @@
 
 // Tìm kiếm sản phẩm
 function searchProducts() {
-    $('#search-form').on('submit', function(e) {
-        e.preventDefault();
-        let query = $('#search-input').val();
-        window.location.href = `${BASE_URL}views/user/search.php?q=${encodeURIComponent(query)}`;
-    });
+    const searchInput = $('#search-input');
+    const searchResults = $('#search-results-dropdown');
 
-    $('#search-filter-form').on('submit', function(e) {
-        e.preventDefault();
-        /*$.ajax({
+    searchInput.on('input', function() {
+        let query = $(this).val();
+
+        if (query.length < 2) { // Chỉ tìm kiếm khi có ít nhất 2 ký tự
+            searchResults.hide();
+            return;
+        }
+
+        $.ajax({
             url: `${BASE_URL}services/search_product.php`,
             method: 'GET',
-            data: $(this).serialize(),
+            data: { q: query },
+            dataType: 'json',
             success: function(data) {
-                $('#search-results').html(data.html);
+                searchResults.empty();
+                if (data.success && data.html) {
+                    searchResults.html(data.html).show();
+                } else {
+                    searchResults.hide();
+                }
             },
-            error: function() {
-                alert('Lỗi khi tìm kiếm sản phẩm.');
+            error: function(jqXHR, textStatus, errorThrown) {
+                searchResults.hide();
             }
-        });*/
+        });
+    });
+
+    // Ẩn kết quả khi click ra ngoài
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#search-form').length) {
+            searchResults.hide();
+        }
+    });
+
+    $('#search-form').on('submit', function(e) {
+        e.preventDefault();
+        let query = searchInput.val();
+        if (query) {
+            window.location.href = `${BASE_URL}views/user/search.php?q=${encodeURIComponent(query)}`;
+        }
     });
 }
 
 // Lọc sản phẩm
 function filterProducts() {
-    $('#filter-form').on('submit', function(e) {
-        e.preventDefault();
+    function handleFilterSubmit(form) {
         $.ajax({
             url: `${BASE_URL}services/filter_product.php`,
             method: 'GET',
-            data: $(this).serialize(),
+            data: form.serialize(),
             success: function(data) {
                 $('#product-list').html(data.html);
+                // Đóng offcanvas sau khi lọc thành công
+                var offcanvasElement = document.getElementById('offcanvasFilter');
+                var offcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement);
+                if (offcanvas) {
+                    offcanvas.hide();
+                }
             },
             error: function() {
                 alert('Lỗi khi lọc sản phẩm.');
             }
         });
+    }
+
+    $('#filter-form').on('submit', function(e) {
+        e.preventDefault();
+        handleFilterSubmit($(this));
     });
 }
 

@@ -1,0 +1,279 @@
+/* CSS for Chatbox */
+
+/* Add this class to the body to prevent background scrolling when the chat is open */
+body.chat-open {
+    overflow: hidden;
+}
+
+:root {
+    --chat-primary-color: #0288d1;
+    /* unified brand dark */
+    --chat-secondary-color: #f1f1f1;
+    --chat-text-color: #333;
+    --chat-window-bg: #fff;
+}
+
+.chat-bubble {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(90deg, #4dd0e1, #0288d1);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    transition: transform 0.2s ease-in-out;
+}
+
+.chat-bubble:hover {
+    transform: scale(1.1);
+}
+
+.chat-window {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    width: 370px;
+    max-width: calc(100% - 40px);
+    height: 500px;
+    background-color: var(--chat-window-bg);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    display: flex;
+    /* Use Flexbox for layout */
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1000;
+    /* Transition for smooth appearance */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+}
+
+.chat-window.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.chat-header {
+    background: linear-gradient(90deg, #4dd0e1, #0288d1);
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.chat-header h5 {
+    font-weight: 600;
+}
+
+.chat-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.chat-body {
+    padding: 1rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    min-height: 0;
+    /* Crucial for making overflow work in a flex child */
+}
+
+.chat-footer {
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #eee;
+    background-color: var(--chat-window-bg);
+}
+
+#chat-input {
+    flex: 1;
+    border: none;
+    border-radius: 20px;
+    padding: 0.75rem 1rem;
+    background-color: #f1f1f1;
+    margin-right: 10px;
+    outline: none;
+}
+
+#send-chat {
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background-color: var(--chat-primary-color);
+    color: white;
+}
+
+.message {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.message p {
+    padding: 0.75rem 1rem;
+    border-radius: 18px;
+    line-height: 1.4;
+    max-width: 85%;
+    margin: 0;
+}
+
+.message.sent {
+    align-items: flex-end;
+}
+
+.message.sent p {
+    background-color: var(--chat-primary-color);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message.received {
+    align-items: flex-start;
+}
+
+.message.received p {
+    background-color: var(--chat-secondary-color);
+    color: var(--chat-text-color);
+    border-bottom-left-radius: 4px;
+}
+
+/* Typing indicator */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+}
+
+.typing-indicator span {
+    height: 8px;
+    width: 8px;
+    background-color: #999;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 2px;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+/* Chat product card - compact display trong chat bot */
+.product-card-chat {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    background: #ffffff;
+    max-width: 380px;
+    /* giới hạn chiều rộng hiển thị trong khung chat */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Ảnh sản phẩm trong chat - nhỏ gọn, cố định kích thước */
+.product-image-chat {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Thông tin sản phẩm (bên phải ảnh) */
+.product-info-chat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    /* cho phép text truncate */
+}
+
+.product-name-chat {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #263238;
+    margin: 0;
+
+    /* Cho phép hiển thị đầy đủ tên: cho xuống dòng và ngắt từ nếu cần */
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    word-break: break-word;
+    /* ngắt từ dài */
+    display: block;
+    line-height: 1.2;
+    max-height: none;
+}
+
+.product-price-chat {
+    font-size: 0.9rem;
+    color: #0288d1;
+    margin: 0;
+}
+
+/* nút xem chi tiết nhỏ gọn trong chat */
+.product-info-chat .btn {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    align-self: flex-start;
+}
+
+/* Responsive: thu nhỏ ảnh trên màn hình nhỏ */
+@media (max-width: 576px) {
+    .product-card-chat {
+        max-width: 100%;
+        padding: 6px;
+    }
+
+    .product-image-chat {
+        width: 48px;
+        height: 48px;
+        flex: 0 0 48px;
+    }
+
+    .product-name-chat {
+        font-size: 0.92rem;
+    }
+
+    .product-price-chat {
+        font-size: 0.85rem;
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1.0);
+    }
+}

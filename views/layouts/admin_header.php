@@ -6,6 +6,7 @@
     <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' | Admin Panel' : 'Admin Panel'; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/categories.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/admin.css">
     <style>
         * {
@@ -21,7 +22,7 @@
 
         /* Header Navbar */
         .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #4dd0e1, #0288d1);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             padding: 0.8rem 1rem;
             position: fixed;
@@ -101,7 +102,7 @@
         }
 
         .dropdown-item:hover {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #4dd0e1, #0288d1);
             color: #fff;
             transform: translateX(5px);
         }
@@ -162,7 +163,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #4dd0e1, #0288d1);
             transition: all 0.4s ease;
             z-index: -1;
         }
@@ -223,7 +224,7 @@
         }
 
         .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #4dd0e1, #0288d1);
             color: #fff;
             border: none;
             padding: 20px 25px;
@@ -337,7 +338,7 @@
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #4dd0e1, #0288d1);
             border-radius: 3px;
         }
 
@@ -461,7 +462,7 @@
         </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdpVzZR8aY8F2hvH" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <!-- Custom JavaScript -->
     <script>
