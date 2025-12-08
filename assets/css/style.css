@@ -811,7 +811,7 @@ body {
     transform: translateX(400px);
     opacity: 0;
     transition: all 0.3s ease;
-    z-index: 500;
+    z-index: 5000000;
     max-width: 300px;
 }
 
