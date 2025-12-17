@@ -1,14 +1,13 @@
 # .htaccess
 RewriteEngine On
-RewriteBase /DoAnCuoiKyLapTrinhWeb/
+RewriteBase /TechStore/
+
+# Định tuyến cho giao diện admin
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^admin/(.*)$ admin.php?url=$1 [QSA,L]
 
 # Định tuyến cho giao diện người dùng
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
-
-# Định tuyến cho giao diện admin
-RewriteCond %{REQUEST_URI} ^/admin
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^admin/(.*)$ admin.php?url=$1 [QSA,L]

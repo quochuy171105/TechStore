@@ -189,6 +189,20 @@ switch ($request) {
         require_once __DIR__ . '/services/update_cart.php';
         break;
 
+    // Chính sách
+    case 'policy/warranty':
+        require_once __DIR__ . '/views/user/policy/warranty.php';
+        break;
+    case 'policy/returns':
+        require_once __DIR__ . '/views/user/policy/returns.php';
+        break;
+    case 'policy/privacy':
+        require_once __DIR__ . '/views/user/policy/privacy.php';
+        break;
+    case 'policy/delivery':
+        require_once __DIR__ . '/views/user/policy/delivery.php';
+        break;
+
     // Nếu không khớp bất kỳ route nào ở trên thì trả về trang 404
     default:
         http_response_code(404);

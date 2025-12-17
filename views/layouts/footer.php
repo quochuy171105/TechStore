@@ -45,7 +45,7 @@ defined('APP_NAME') or define('APP_NAME', 'HNQNH Store');
             <div class="col-lg-3 col-md-6">
                 <h5 class="mb-3 text-uppercase border-start border-primary border-3 ps-2">Liên hệ</h5>
                 <p class="text-secondary mb-1"><i class="fas fa-map-marker-alt me-2 text-primary"></i>Chung cư SG Intela, KDC 13E, Đường số 5, huyện Bình Chánh, TP. Sài Gòn</p>
-                <p class="text-secondary mb-1"><i class="fas fa-phone-alt me-2 text-primary"></i>Hotline: 0916076557 (7h30 - 22h00)</p>
+                <p class="text-secondary mb-1"><i class="fas fa-phone-alt me-2 text-primary"></i>Hotline: 1900 1234 (7h30 - 22h00)</p>
                 <p class="text-secondary mb-1"><i class="fas fa-envelope me-2 text-primary"></i>Email: support@HNQNHstore.com</p>
                 <p class="text-secondary mb-1"><i class="fas fa-clock me-2 text-primary"></i>Mở cửa: Thứ 2 - Chủ Nhật</p>
             </div>
