@@ -179,7 +179,7 @@ Cơ sở dữ liệu `techstore` bao gồm các bảng sau:
 
 1.  **Clone project**:
     ```bash
-    git clone <your-repository-url> TechStore
+    git clone https://github.com/quochuy171105/TechStore.git TechStore
     ```
 2.  **Di chuyển vào thư mục `htdocs`**:
     *   Di chuyển thư mục `TechStore` vừa clone vào thư mục `htdocs` của XAMPP.
