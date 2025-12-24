@@ -334,14 +334,11 @@ $(document).ready(function () {
             }
 
             // 4. Quyết định action
-            if (intent.requiresDB) {
-                return await this.fetchDatabaseResponse(intent, entities);
-            }
-
-            return this.getStaticResponse(intent);
+            // LUÔN GỬI ĐẾN BACKEND
+            return await this.fetchDatabaseResponse(intent, entities, userInput);
         }
 
-        async fetchDatabaseResponse(intent, entities) {
+        async fetchDatabaseResponse(intent, entities, userInput) {
             try {
                 // Thêm product_id từ context vào entities nếu có
                 if (conversationContext.focusedProduct && !entities.product_id) {
@@ -354,6 +351,7 @@ $(document).ready(function () {
                     dataType: 'json',
                     data: {
                         action: intent.intent, // Use the correct intent for the backend
+                        userInput: userInput, // Gửi cả nội dung gốc của người dùng
                         entities: JSON.stringify(entities),
                         context: JSON.stringify(conversationContext),
                         history: JSON.stringify(chatHistory.slice(-CONFIG.contextWindow))
@@ -380,7 +378,11 @@ $(document).ready(function () {
 
             // Các intent trả về message đơn giản
             if (data.data && data.data.message) {
-                return { text: data.data.message, type: 'text' };
+                const response = { text: data.data.message, type: 'text' };
+                if (data.data.actions) {
+                    response.actions = data.data.actions;
+                }
+                return response;
             }
 
             switch (intent.intent) {
@@ -707,7 +709,7 @@ $(document).ready(function () {
                 conversationContext.priceRange = entities.priceRange;
             }
 
-            // Cập nhật danh sách sản phẩm cuối cùng được hiển thị
+            // Cập nhật danh sách sản phẩm cuống được hiển thị
             if (aiResponse && aiResponse.products) {
                 conversationContext.lastProducts = aiResponse.products;
                 // Mặc định focus vào sản phẩm đầu tiên trong danh sách
@@ -828,28 +830,50 @@ $(document).ready(function () {
     }
 
     function appendMessage(data, type, customClass = '') {
-        let messageHTML = '';
+        let messageContent;
+        let actionsHTML = '';
 
+        // 1. Process actions (buttons)
+        if (data && data.actions && Array.isArray(data.actions)) {
+            actionsHTML = '<div class="chat-actions-container">';
+            data.actions.forEach(action => {
+                let buttonAttrs = '';
+                if (action.url) {
+                    buttonAttrs = `data-url="${escapeHtml(action.url)}"`;
+                } else if (action.command) {
+                    buttonAttrs = `data-command="${escapeHtml(action.command)}"`;
+                }
+                actionsHTML += `<button class="chat-action-button" ${buttonAttrs}>${escapeHtml(action.label)}</button>`;
+            });
+            actionsHTML += '</div>';
+        }
+
+        // 2. Process main message content
         if (type === 'sent') {
-            const formattedText = formatMessageText(escapeHtml(data));
-            messageHTML = `<div class="message sent ${customClass}">${formattedText}</div>`;
+            messageContent = formatMessageText(escapeHtml(data));
         } else if (data && data.type === 'html') {
-            // Tin nhắn kiểu HTML, không cần escape
-            messageHTML = `<div class="message received ${customClass}">${data.text}</div>`;
+            messageContent = data.text; // Already formatted HTML, no need to escape
         } else {
             let textToFormat = '';
             if (typeof data === 'string') {
                 textToFormat = data;
             } else if (data && data.text) {
                 textToFormat = data.text;
-            } else if (data && data.message) { // Fallback cho object lỗi
+            } else if (data && data.message) { // Fallback for error objects
                 textToFormat = data.message;
             } else {
                 textToFormat = 'Lỗi: Phản hồi không hợp lệ.';
             }
-            const formattedText = formatMessageText(escapeHtml(textToFormat));
-            messageHTML = `<div class="message received ${customClass}">${formattedText}</div>`;
+            messageContent = `<div class="message-content">${formatMessageText(escapeHtml(textToFormat))}</div>`;
         }
+
+        // 3. Combine message and actions
+        const messageHTML = `
+            <div class="message ${type} ${customClass}">
+                ${type === 'sent' ? `<div class="message-content">${messageContent}</div>` : messageContent}
+                ${actionsHTML}
+            </div>
+        `;
 
         chatBody.append(messageHTML);
         scrollToBottom();

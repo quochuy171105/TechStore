@@ -1,0 +1,828 @@
+[24-Dec-2025 03:02:18 Europe/Berlin] Session started, ID: 3vuhioh0a2r9rpibiknd81l8ts
+[24-Dec-2025 03:02:18 Europe/Berlin] Processing URL: orders
+[24-Dec-2025 03:02:18 Europe/Berlin] Controller: orders, Action: index, Param: 
+[24-Dec-2025 03:02:18 Europe/Berlin] Calling orders::index
+[24-Dec-2025 03:02:19 Europe/Berlin] Session started, ID: 3vuhioh0a2r9rpibiknd81l8ts
+[24-Dec-2025 03:02:19 Europe/Berlin] Processing URL: promotions
+[24-Dec-2025 03:02:19 Europe/Berlin] Controller: promotions, Action: index, Param: 
+[24-Dec-2025 03:02:19 Europe/Berlin] Calling promotions::index
+[24-Dec-2025 03:02:20 Europe/Berlin] Session started, ID: 3vuhioh0a2r9rpibiknd81l8ts
+[24-Dec-2025 03:02:20 Europe/Berlin] Processing URL: revenue
+[24-Dec-2025 03:02:20 Europe/Berlin] Controller: revenue, Action: index, Param: 
+[24-Dec-2025 03:02:20 Europe/Berlin] Calling revenue::index
+[24-Dec-2025 03:02:20 Europe/Berlin] AdminRevenueController::index() called
+[24-Dec-2025 03:02:20 Europe/Berlin] Querying revenue from 2025-11-24 to 2025-12-24 in controller
+[24-Dec-2025 03:02:20 Europe/Berlin] SQL query for date range: SELECT DATE(revenue_date) as date, SUM(total_amount) as total FROM revenue WHERE revenue_date BETWEEN :start_date AND :end_date GROUP BY DATE(revenue_date) ORDER BY DATE(revenue_date) ASC
+[24-Dec-2025 03:02:20 Europe/Berlin] Revenue data: Array
+(
+    [0] => Array
+        (
+            [date] => 2025-11-24
+            [total] => 2920552
+        )
+
+    [1] => Array
+        (
+            [date] => 2025-11-25
+            [total] => 614938
+        )
+
+    [2] => Array
+        (
+            [date] => 2025-11-26
+            [total] => 922850
+        )
+
+    [3] => Array
+        (
+            [date] => 2025-11-27
+            [total] => 4367237
+        )
+
+    [4] => Array
+        (
+            [date] => 2025-11-28
+            [total] => 4043450
+        )
+
+    [5] => Array
+        (
+            [date] => 2025-11-29
+            [total] => 3362934
+        )
+
+    [6] => Array
+        (
+            [date] => 2025-11-30
+            [total] => 3240941
+        )
+
+    [7] => Array
+        (
+            [date] => 2025-12-01
+            [total] => 1625797
+        )
+
+    [8] => Array
+        (
+            [date] => 2025-12-02
+            [total] => 4227687
+        )
+
+    [9] => Array
+        (
+            [date] => 2025-12-03
+            [total] => 4400792
+        )
+
+    [10] => Array
+        (
+            [date] => 2025-12-04
+            [total] => 4067065
+        )
+
+    [11] => Array
+        (
+            [date] => 2025-12-05
+            [total] => 4797620
+        )
+
+    [12] => Array
+        (
+            [date] => 2025-12-06
+            [total] => 1097139
+        )
+
+    [13] => Array
+        (
+            [date] => 2025-12-07
+            [total] => 2401425
+        )
+
+    [14] => Array
+        (
+            [date] => 2025-12-08
+            [total] => 3937520
+        )
+
+    [15] => Array
+        (
+            [date] => 2025-12-09
+            [total] => 2472759
+        )
+
+    [16] => Array
+        (
+            [date] => 2025-12-10
+            [total] => 2061811
+        )
+
+    [17] => Array
+        (
+            [date] => 2025-12-11
+            [total] => 1490766
+        )
+
+    [18] => Array
+        (
+            [date] => 2025-12-12
+            [total] => 3253559
+        )
+
+    [19] => Array
+        (
+            [date] => 2025-12-13
+            [total] => 956139
+        )
+
+    [20] => Array
+        (
+            [date] => 2025-12-14
+            [total] => 1127147
+        )
+
+    [21] => Array
+        (
+            [date] => 2025-12-15
+            [total] => 4387891
+        )
+
+    [22] => Array
+        (
+            [date] => 2025-12-16
+            [total] => 2479605
+        )
+
+    [23] => Array
+        (
+            [date] => 2025-12-17
+            [total] => 4977879
+        )
+
+    [24] => Array
+        (
+            [date] => 2025-12-18
+            [total] => 3389354
+        )
+
+    [25] => Array
+        (
+            [date] => 2025-12-19
+            [total] => 2092623
+        )
+
+    [26] => Array
+        (
+            [date] => 2025-12-20
+            [total] => 3685875
+        )
+
+    [27] => Array
+        (
+            [date] => 2025-12-21
+            [total] => 4592875
+        )
+
+    [28] => Array
+        (
+            [date] => 2025-12-22
+            [total] => 667125
+        )
+
+    [29] => Array
+        (
+            [date] => 2025-12-23
+            [total] => 3737019
+        )
+
+    [30] => Array
+        (
+            [date] => 2025-12-24
+            [total] => 4225176
+        )
+
+)
+
+[24-Dec-2025 03:02:20 Europe/Berlin] Total revenue: 91625550
+[24-Dec-2025 03:02:20 Europe/Berlin] Session started, ID: 3vuhioh0a2r9rpibiknd81l8ts
+[24-Dec-2025 03:02:20 Europe/Berlin] Processing URL: get_revenue_data
+[24-Dec-2025 03:02:20 Europe/Berlin] Controller: get_revenue_data, Action: index, Param: 
+[24-Dec-2025 03:02:20 Europe/Berlin] getRevenueData GET request: Array
+(
+    [url] => get_revenue_data
+    [filter_type] => range
+    [start_date] => 2025-11-24
+    [end_date] => 2025-12-24
+    [chart_type] => line
+)
+
+[24-Dec-2025 03:02:20 Europe/Berlin] getRevenueData response: Array
+(
+    [labels] => Array
+        (
+            [0] => 24/11/2025
+            [1] => 25/11/2025
+            [2] => 26/11/2025
+            [3] => 27/11/2025
+            [4] => 28/11/2025
+            [5] => 29/11/2025
+            [6] => 30/11/2025
+            [7] => 01/12/2025
+            [8] => 02/12/2025
+            [9] => 03/12/2025
+            [10] => 04/12/2025
+            [11] => 05/12/2025
+            [12] => 06/12/2025
+            [13] => 07/12/2025
+            [14] => 08/12/2025
+            [15] => 09/12/2025
+            [16] => 10/12/2025
+            [17] => 11/12/2025
+            [18] => 12/12/2025
+            [19] => 13/12/2025
+            [20] => 14/12/2025
+            [21] => 15/12/2025
+            [22] => 16/12/2025
+            [23] => 17/12/2025
+            [24] => 18/12/2025
+            [25] => 19/12/2025
+            [26] => 20/12/2025
+            [27] => 21/12/2025
+            [28] => 22/12/2025
+            [29] => 23/12/2025
+            [30] => 24/12/2025
+        )
+
+    [data] => Array
+        (
+            [0] => 2920552
+            [1] => 614938
+            [2] => 922850
+            [3] => 4367237
+            [4] => 4043450
+            [5] => 3362934
+            [6] => 3240941
+            [7] => 1625797
+            [8] => 4227687
+            [9] => 4400792
+            [10] => 4067065
+            [11] => 4797620
+            [12] => 1097139
+            [13] => 2401425
+            [14] => 3937520
+            [15] => 2472759
+            [16] => 2061811
+            [17] => 1490766
+            [18] => 3253559
+            [19] => 956139
+            [20] => 1127147
+            [21] => 4387891
+            [22] => 2479605
+            [23] => 4977879
+            [24] => 3389354
+            [25] => 2092623
+            [26] => 3685875
+            [27] => 4592875
+            [28] => 667125
+            [29] => 3737019
+            [30] => 4225176
+        )
+
+    [totalRevenue] => 91625550
+)
+
+[24-Dec-2025 03:04:11 Europe/Berlin] Session started, ID: jjc2shlngtdtht8i5r7un5c044
+[24-Dec-2025 03:04:11 Europe/Berlin] Processing URL: orders
+[24-Dec-2025 03:04:11 Europe/Berlin] Controller: orders, Action: index, Param: 
+[24-Dec-2025 03:04:11 Europe/Berlin] Redirecting to login, user not admin or not logged in
+[24-Dec-2025 03:04:11 Europe/Berlin] Session started, ID: jjc2shlngtdtht8i5r7un5c044
+[24-Dec-2025 03:04:11 Europe/Berlin] Processing URL: login
+[24-Dec-2025 03:04:11 Europe/Berlin] Controller: login, Action: index, Param: 
+[24-Dec-2025 03:04:15 Europe/Berlin] Session started, ID: jjc2shlngtdtht8i5r7un5c044
+[24-Dec-2025 03:04:15 Europe/Berlin] Processing URL: login
+[24-Dec-2025 03:04:15 Europe/Berlin] Controller: login, Action: index, Param: 
+[24-Dec-2025 03:04:16 Europe/Berlin] Admin login successful: admin@example.com
+[24-Dec-2025 03:04:16 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:04:16 Europe/Berlin] Processing URL: dashboard
+[24-Dec-2025 03:04:16 Europe/Berlin] Controller: dashboard, Action: index, Param: 
+[24-Dec-2025 03:04:16 Europe/Berlin] Calling dashboard::index
+[24-Dec-2025 03:04:16 Europe/Berlin] Total revenue: 2002576488
+[24-Dec-2025 03:04:16 Europe/Berlin] Total orders: 37
+[24-Dec-2025 03:04:16 Europe/Berlin] Total products: 43
+[24-Dec-2025 03:04:16 Europe/Berlin] Total users: 10
+[24-Dec-2025 03:04:16 Europe/Berlin] Customers fetched: 5 records
+[24-Dec-2025 03:04:16 Europe/Berlin] Total customers: 10, Pages: 2
+[24-Dec-2025 03:04:16 Europe/Berlin] Order status counts: Array
+(
+    [pending] => 18
+    [processing] => 4
+    [shipped] => 3
+    [delivered] => 10
+    [cancelled] => 2
+)
+
+[24-Dec-2025 03:04:16 Europe/Berlin] Recent revenue data: Array
+(
+    [0] => Array
+        (
+            [date] => 2025-12-18
+            [total] => 3389354
+        )
+
+    [1] => Array
+        (
+            [date] => 2025-12-19
+            [total] => 2092623
+        )
+
+    [2] => Array
+        (
+            [date] => 2025-12-20
+            [total] => 3685875
+        )
+
+    [3] => Array
+        (
+            [date] => 2025-12-21
+            [total] => 4592875
+        )
+
+    [4] => Array
+        (
+            [date] => 2025-12-22
+            [total] => 667125
+        )
+
+    [5] => Array
+        (
+            [date] => 2025-12-23
+            [total] => 3737019
+        )
+
+    [6] => Array
+        (
+            [date] => 2025-12-24
+            [total] => 4225176
+        )
+
+)
+
+[24-Dec-2025 03:04:33 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:04:33 Europe/Berlin] Processing URL: products
+[24-Dec-2025 03:04:33 Europe/Berlin] Controller: products, Action: index, Param: 
+[24-Dec-2025 03:04:33 Europe/Berlin] Calling products::index
+[24-Dec-2025 03:04:42 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:04:42 Europe/Berlin] Processing URL: orders
+[24-Dec-2025 03:04:42 Europe/Berlin] Controller: orders, Action: index, Param: 
+[24-Dec-2025 03:04:42 Europe/Berlin] Calling orders::index
+[24-Dec-2025 03:04:47 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:04:47 Europe/Berlin] Processing URL: orders/update/39
+[24-Dec-2025 03:04:47 Europe/Berlin] Controller: orders, Action: update, Param: 39
+[24-Dec-2025 03:04:47 Europe/Berlin] Calling orders::update with param: 39
+[24-Dec-2025 03:04:47 Europe/Berlin] AdminOrderController::update called with id: 39
+[24-Dec-2025 03:04:51 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:04:51 Europe/Berlin] Processing URL: orders
+[24-Dec-2025 03:04:51 Europe/Berlin] Controller: orders, Action: index, Param: 
+[24-Dec-2025 03:04:51 Europe/Berlin] Calling orders::index
+[24-Dec-2025 03:04:57 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:04:57 Europe/Berlin] Processing URL: orders/update/36
+[24-Dec-2025 03:04:57 Europe/Berlin] Controller: orders, Action: update, Param: 36
+[24-Dec-2025 03:04:57 Europe/Berlin] Calling orders::update with param: 36
+[24-Dec-2025 03:04:57 Europe/Berlin] AdminOrderController::update called with id: 36
+[24-Dec-2025 03:04:59 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:04:59 Europe/Berlin] Processing URL: orders/update/36
+[24-Dec-2025 03:04:59 Europe/Berlin] Controller: orders, Action: update, Param: 36
+[24-Dec-2025 03:04:59 Europe/Berlin] Calling orders::update with param: 36
+[24-Dec-2025 03:04:59 Europe/Berlin] AdminOrderController::update called with id: 36
+[24-Dec-2025 03:04:59 Europe/Berlin] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\TechStore\controllers\AdminOrderController.php on line 53
+[24-Dec-2025 03:04:59 Europe/Berlin] Order updated successfully, redirecting to orders
+[24-Dec-2025 03:04:59 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:04:59 Europe/Berlin] Processing URL: orders
+[24-Dec-2025 03:04:59 Europe/Berlin] Controller: orders, Action: index, Param: 
+[24-Dec-2025 03:04:59 Europe/Berlin] Calling orders::index
+[24-Dec-2025 03:05:01 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:01 Europe/Berlin] Processing URL: orders/update/38
+[24-Dec-2025 03:05:01 Europe/Berlin] Controller: orders, Action: update, Param: 38
+[24-Dec-2025 03:05:01 Europe/Berlin] Calling orders::update with param: 38
+[24-Dec-2025 03:05:01 Europe/Berlin] AdminOrderController::update called with id: 38
+[24-Dec-2025 03:05:02 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:02 Europe/Berlin] Processing URL: orders/update/38
+[24-Dec-2025 03:05:02 Europe/Berlin] Controller: orders, Action: update, Param: 38
+[24-Dec-2025 03:05:02 Europe/Berlin] Calling orders::update with param: 38
+[24-Dec-2025 03:05:02 Europe/Berlin] AdminOrderController::update called with id: 38
+[24-Dec-2025 03:05:02 Europe/Berlin] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\TechStore\controllers\AdminOrderController.php on line 53
+[24-Dec-2025 03:05:02 Europe/Berlin] Order updated successfully, redirecting to orders
+[24-Dec-2025 03:05:02 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:02 Europe/Berlin] Processing URL: orders
+[24-Dec-2025 03:05:02 Europe/Berlin] Controller: orders, Action: index, Param: 
+[24-Dec-2025 03:05:02 Europe/Berlin] Calling orders::index
+[24-Dec-2025 03:05:04 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:04 Europe/Berlin] Processing URL: orders/update/38
+[24-Dec-2025 03:05:04 Europe/Berlin] Controller: orders, Action: update, Param: 38
+[24-Dec-2025 03:05:04 Europe/Berlin] Calling orders::update with param: 38
+[24-Dec-2025 03:05:04 Europe/Berlin] AdminOrderController::update called with id: 38
+[24-Dec-2025 03:05:06 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:06 Europe/Berlin] Processing URL: orders/update/38
+[24-Dec-2025 03:05:06 Europe/Berlin] Controller: orders, Action: update, Param: 38
+[24-Dec-2025 03:05:06 Europe/Berlin] Calling orders::update with param: 38
+[24-Dec-2025 03:05:06 Europe/Berlin] AdminOrderController::update called with id: 38
+[24-Dec-2025 03:05:06 Europe/Berlin] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\TechStore\controllers\AdminOrderController.php on line 53
+[24-Dec-2025 03:05:06 Europe/Berlin] Order updated successfully, redirecting to orders
+[24-Dec-2025 03:05:06 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:06 Europe/Berlin] Processing URL: orders
+[24-Dec-2025 03:05:06 Europe/Berlin] Controller: orders, Action: index, Param: 
+[24-Dec-2025 03:05:06 Europe/Berlin] Calling orders::index
+[24-Dec-2025 03:05:07 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:07 Europe/Berlin] Processing URL: orders/update/38
+[24-Dec-2025 03:05:07 Europe/Berlin] Controller: orders, Action: update, Param: 38
+[24-Dec-2025 03:05:07 Europe/Berlin] Calling orders::update with param: 38
+[24-Dec-2025 03:05:07 Europe/Berlin] AdminOrderController::update called with id: 38
+[24-Dec-2025 03:05:09 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:09 Europe/Berlin] Processing URL: orders/update/38
+[24-Dec-2025 03:05:09 Europe/Berlin] Controller: orders, Action: update, Param: 38
+[24-Dec-2025 03:05:09 Europe/Berlin] Calling orders::update with param: 38
+[24-Dec-2025 03:05:09 Europe/Berlin] AdminOrderController::update called with id: 38
+[24-Dec-2025 03:05:09 Europe/Berlin] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\TechStore\controllers\AdminOrderController.php on line 53
+[24-Dec-2025 03:05:09 Europe/Berlin] Order updated successfully, redirecting to orders
+[24-Dec-2025 03:05:09 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:09 Europe/Berlin] Processing URL: orders
+[24-Dec-2025 03:05:09 Europe/Berlin] Controller: orders, Action: index, Param: 
+[24-Dec-2025 03:05:09 Europe/Berlin] Calling orders::index
+[24-Dec-2025 03:05:23 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:23 Europe/Berlin] Processing URL: orders/update/34
+[24-Dec-2025 03:05:23 Europe/Berlin] Controller: orders, Action: update, Param: 34
+[24-Dec-2025 03:05:23 Europe/Berlin] Calling orders::update with param: 34
+[24-Dec-2025 03:05:23 Europe/Berlin] AdminOrderController::update called with id: 34
+[24-Dec-2025 03:05:25 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:25 Europe/Berlin] Processing URL: orders/update/34
+[24-Dec-2025 03:05:25 Europe/Berlin] Controller: orders, Action: update, Param: 34
+[24-Dec-2025 03:05:25 Europe/Berlin] Calling orders::update with param: 34
+[24-Dec-2025 03:05:25 Europe/Berlin] AdminOrderController::update called with id: 34
+[24-Dec-2025 03:05:25 Europe/Berlin] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\TechStore\controllers\AdminOrderController.php on line 53
+[24-Dec-2025 03:05:25 Europe/Berlin] Order updated successfully, redirecting to orders
+[24-Dec-2025 03:05:25 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:25 Europe/Berlin] Processing URL: orders
+[24-Dec-2025 03:05:25 Europe/Berlin] Controller: orders, Action: index, Param: 
+[24-Dec-2025 03:05:25 Europe/Berlin] Calling orders::index
+[24-Dec-2025 03:05:31 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:05:31 Europe/Berlin] Processing URL: orders
+[24-Dec-2025 03:05:31 Europe/Berlin] Controller: orders, Action: index, Param: 
+[24-Dec-2025 03:05:31 Europe/Berlin] Calling orders::index
+[24-Dec-2025 03:13:48 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:13:48 Europe/Berlin] Processing URL: orders
+[24-Dec-2025 03:13:48 Europe/Berlin] Controller: orders, Action: index, Param: 
+[24-Dec-2025 03:13:48 Europe/Berlin] Calling orders::index
+[24-Dec-2025 03:13:50 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:13:50 Europe/Berlin] Processing URL: dashboard
+[24-Dec-2025 03:13:50 Europe/Berlin] Controller: dashboard, Action: index, Param: 
+[24-Dec-2025 03:13:50 Europe/Berlin] Calling dashboard::index
+[24-Dec-2025 03:13:50 Europe/Berlin] Total revenue: 2002576488
+[24-Dec-2025 03:13:50 Europe/Berlin] Total orders: 37
+[24-Dec-2025 03:13:50 Europe/Berlin] Total products: 43
+[24-Dec-2025 03:13:50 Europe/Berlin] Total users: 10
+[24-Dec-2025 03:13:50 Europe/Berlin] Customers fetched: 5 records
+[24-Dec-2025 03:13:50 Europe/Berlin] Total customers: 10, Pages: 2
+[24-Dec-2025 03:13:50 Europe/Berlin] Order status counts: Array
+(
+    [pending] => 15
+    [processing] => 4
+    [shipped] => 3
+    [delivered] => 13
+    [cancelled] => 2
+)
+
+[24-Dec-2025 03:13:50 Europe/Berlin] Recent revenue data: Array
+(
+    [0] => Array
+        (
+            [date] => 2025-12-18
+            [total] => 3389354
+        )
+
+    [1] => Array
+        (
+            [date] => 2025-12-19
+            [total] => 2092623
+        )
+
+    [2] => Array
+        (
+            [date] => 2025-12-20
+            [total] => 3685875
+        )
+
+    [3] => Array
+        (
+            [date] => 2025-12-21
+            [total] => 4592875
+        )
+
+    [4] => Array
+        (
+            [date] => 2025-12-22
+            [total] => 667125
+        )
+
+    [5] => Array
+        (
+            [date] => 2025-12-23
+            [total] => 3737019
+        )
+
+    [6] => Array
+        (
+            [date] => 2025-12-24
+            [total] => 4225176
+        )
+
+)
+
+[24-Dec-2025 03:13:52 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:13:52 Europe/Berlin] Processing URL: promotions
+[24-Dec-2025 03:13:52 Europe/Berlin] Controller: promotions, Action: index, Param: 
+[24-Dec-2025 03:13:52 Europe/Berlin] Calling promotions::index
+[24-Dec-2025 03:13:53 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:13:53 Europe/Berlin] Processing URL: revenue
+[24-Dec-2025 03:13:53 Europe/Berlin] Controller: revenue, Action: index, Param: 
+[24-Dec-2025 03:13:53 Europe/Berlin] Calling revenue::index
+[24-Dec-2025 03:13:53 Europe/Berlin] AdminRevenueController::index() called
+[24-Dec-2025 03:13:53 Europe/Berlin] Querying revenue from 2025-11-24 to 2025-12-24 in controller
+[24-Dec-2025 03:13:53 Europe/Berlin] SQL query for date range: SELECT DATE(revenue_date) as date, SUM(total_amount) as total FROM revenue WHERE revenue_date BETWEEN :start_date AND :end_date GROUP BY DATE(revenue_date) ORDER BY DATE(revenue_date) ASC
+[24-Dec-2025 03:13:53 Europe/Berlin] Revenue data: Array
+(
+    [0] => Array
+        (
+            [date] => 2025-11-24
+            [total] => 2920552
+        )
+
+    [1] => Array
+        (
+            [date] => 2025-11-25
+            [total] => 614938
+        )
+
+    [2] => Array
+        (
+            [date] => 2025-11-26
+            [total] => 922850
+        )
+
+    [3] => Array
+        (
+            [date] => 2025-11-27
+            [total] => 4367237
+        )
+
+    [4] => Array
+        (
+            [date] => 2025-11-28
+            [total] => 4043450
+        )
+
+    [5] => Array
+        (
+            [date] => 2025-11-29
+            [total] => 3362934
+        )
+
+    [6] => Array
+        (
+            [date] => 2025-11-30
+            [total] => 3240941
+        )
+
+    [7] => Array
+        (
+            [date] => 2025-12-01
+            [total] => 1625797
+        )
+
+    [8] => Array
+        (
+            [date] => 2025-12-02
+            [total] => 4227687
+        )
+
+    [9] => Array
+        (
+            [date] => 2025-12-03
+            [total] => 4400792
+        )
+
+    [10] => Array
+        (
+            [date] => 2025-12-04
+            [total] => 4067065
+        )
+
+    [11] => Array
+        (
+            [date] => 2025-12-05
+            [total] => 4797620
+        )
+
+    [12] => Array
+        (
+            [date] => 2025-12-06
+            [total] => 1097139
+        )
+
+    [13] => Array
+        (
+            [date] => 2025-12-07
+            [total] => 2401425
+        )
+
+    [14] => Array
+        (
+            [date] => 2025-12-08
+            [total] => 3937520
+        )
+
+    [15] => Array
+        (
+            [date] => 2025-12-09
+            [total] => 2472759
+        )
+
+    [16] => Array
+        (
+            [date] => 2025-12-10
+            [total] => 2061811
+        )
+
+    [17] => Array
+        (
+            [date] => 2025-12-11
+            [total] => 1490766
+        )
+
+    [18] => Array
+        (
+            [date] => 2025-12-12
+            [total] => 3253559
+        )
+
+    [19] => Array
+        (
+            [date] => 2025-12-13
+            [total] => 956139
+        )
+
+    [20] => Array
+        (
+            [date] => 2025-12-14
+            [total] => 1127147
+        )
+
+    [21] => Array
+        (
+            [date] => 2025-12-15
+            [total] => 4387891
+        )
+
+    [22] => Array
+        (
+            [date] => 2025-12-16
+            [total] => 2479605
+        )
+
+    [23] => Array
+        (
+            [date] => 2025-12-17
+            [total] => 4977879
+        )
+
+    [24] => Array
+        (
+            [date] => 2025-12-18
+            [total] => 3389354
+        )
+
+    [25] => Array
+        (
+            [date] => 2025-12-19
+            [total] => 2092623
+        )
+
+    [26] => Array
+        (
+            [date] => 2025-12-20
+            [total] => 3685875
+        )
+
+    [27] => Array
+        (
+            [date] => 2025-12-21
+            [total] => 4592875
+        )
+
+    [28] => Array
+        (
+            [date] => 2025-12-22
+            [total] => 667125
+        )
+
+    [29] => Array
+        (
+            [date] => 2025-12-23
+            [total] => 3737019
+        )
+
+    [30] => Array
+        (
+            [date] => 2025-12-24
+            [total] => 4225176
+        )
+
+)
+
+[24-Dec-2025 03:13:53 Europe/Berlin] Total revenue: 91625550
+[24-Dec-2025 03:13:53 Europe/Berlin] Session started, ID: ft7jvmc03gchgprirucvmtknsg
+[24-Dec-2025 03:13:53 Europe/Berlin] Processing URL: get_revenue_data
+[24-Dec-2025 03:13:53 Europe/Berlin] Controller: get_revenue_data, Action: index, Param: 
+[24-Dec-2025 03:13:53 Europe/Berlin] getRevenueData GET request: Array
+(
+    [url] => get_revenue_data
+    [filter_type] => range
+    [start_date] => 2025-11-24
+    [end_date] => 2025-12-24
+    [chart_type] => line
+)
+
+[24-Dec-2025 03:13:53 Europe/Berlin] getRevenueData response: Array
+(
+    [labels] => Array
+        (
+            [0] => 24/11/2025
+            [1] => 25/11/2025
+            [2] => 26/11/2025
+            [3] => 27/11/2025
+            [4] => 28/11/2025
+            [5] => 29/11/2025
+            [6] => 30/11/2025
+            [7] => 01/12/2025
+            [8] => 02/12/2025
+            [9] => 03/12/2025
+            [10] => 04/12/2025
+            [11] => 05/12/2025
+            [12] => 06/12/2025
+            [13] => 07/12/2025
+            [14] => 08/12/2025
+            [15] => 09/12/2025
+            [16] => 10/12/2025
+            [17] => 11/12/2025
+            [18] => 12/12/2025
+            [19] => 13/12/2025
+            [20] => 14/12/2025
+            [21] => 15/12/2025
+            [22] => 16/12/2025
+            [23] => 17/12/2025
+            [24] => 18/12/2025
+            [25] => 19/12/2025
+            [26] => 20/12/2025
+            [27] => 21/12/2025
+            [28] => 22/12/2025
+            [29] => 23/12/2025
+            [30] => 24/12/2025
+        )
+
+    [data] => Array
+        (
+            [0] => 2920552
+            [1] => 614938
+            [2] => 922850
+            [3] => 4367237
+            [4] => 4043450
+            [5] => 3362934
+            [6] => 3240941
+            [7] => 1625797
+            [8] => 4227687
+            [9] => 4400792
+            [10] => 4067065
+            [11] => 4797620
+            [12] => 1097139
+            [13] => 2401425
+            [14] => 3937520
+            [15] => 2472759
+            [16] => 2061811
+            [17] => 1490766
+            [18] => 3253559
+            [19] => 956139
+            [20] => 1127147
+            [21] => 4387891
+            [22] => 2479605
+            [23] => 4977879
+            [24] => 3389354
+            [25] => 2092623
+            [26] => 3685875
+            [27] => 4592875
+            [28] => 667125
+            [29] => 3737019
+            [30] => 4225176
+        )
+
+    [totalRevenue] => 91625550
+)
+

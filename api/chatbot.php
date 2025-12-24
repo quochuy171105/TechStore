@@ -7,6 +7,14 @@ error_reporting(E_ALL);
 // Log execution start
 file_put_contents(__DIR__ . '/debug.log', "chatbot.php execution started at " . date('Y-m-d H:i:s') . "\n", FILE_APPEND);
 
+// Check if cURL is enabled
+if (!function_exists('curl_init')) {
+    file_put_contents(__DIR__ . '/debug.log', "FATAL ERROR: cURL extension is not enabled.\n", FILE_APPEND);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Server configuration error: cURL is not enabled.']);
+    exit();
+}
+
 // ============================================\n// SMART CHATBOT API - BACKEND HANDLER V2.1 (Patched)
 // File: api/chatbot.php
 // ============================================
@@ -19,6 +27,14 @@ header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
+}
+
+require_once __DIR__ . '/../vendor/autoload.php';
+try {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+    $dotenv->load();
+} catch (Throwable $e) {
+    file_put_contents(__DIR__ . '/debug.log', "Error loading .env file: " . $e->getMessage() . "\n", FILE_APPEND);
 }
 
 require_once __DIR__ . '/../config/database.php';
@@ -47,6 +63,7 @@ class ChatbotAPI {
     public function handleRequest() {
         try {
             $action = $_POST['action'] ?? '';
+            $userInput = $_POST['userInput'] ?? '';
             $this->entities = json_decode($_POST['entities'] ?? '{}', true);
             $this->context = json_decode($_POST['context'] ?? '{}', true);
             $this->history = json_decode($_POST['history'] ?? '[]', true);
@@ -71,7 +88,7 @@ class ChatbotAPI {
                 case 'comparison':
                     return $this->handleComparison();
                 default:
-                    return $this->successResponse(['message' => "Tôi chưa được huấn luyện để xử lý yêu cầu này."]);
+                    return $this->handleGeneralQuery($userInput);
             }
             
         } catch(Exception $e) {
@@ -82,6 +99,176 @@ class ChatbotAPI {
 
     // ============================================\n    // HANDLER METHODS
     // ============================================
+
+    private function handleGeneralQuery($userInput) {
+        if (empty($userInput)) {
+            return $this->successResponse(['message' => "Tôi chưa hiểu ý bạn. Bạn có thể nói rõ hơn được không?"]);
+        }
+
+        // Check for policy keywords
+        $normalizedInput = mb_strtolower($userInput, 'UTF-8');
+        $policyKeywords = [
+            'bảo hành' => [
+                'message' => 'Bạn có thể tìm hiểu chi tiết về chính sách bảo hành sản phẩm của chúng tôi tại đây:',
+                'actions' => [['label' => 'Xem Chính sách Bảo hành', 'url' => 'index.php?url=policy/warranty']]
+            ],
+            'đổi trả' => [
+                'message' => 'Bạn có thể tìm hiểu chi tiết về quy trình và điều kiện đổi trả sản phẩm của chúng tôi tại đây:',
+                'actions' => [['label' => 'Xem Chính sách Đổi trả', 'url' => 'index.php?url=policy/returns']]
+            ],
+            'giao hàng' => [
+                'message' => 'Thông tin về phí vận chuyển, thời gian và khu vực giao hàng có đầy đủ tại đây:',
+                'actions' => [['label' => 'Xem Chính sách Giao hàng', 'url' => 'index.php?url=policy/delivery']]
+            ],
+            'bảo mật' => [
+                'message' => 'Chúng tôi rất coi trọng việc bảo vệ thông tin của bạn. Vui lòng xem chi tiết tại đây:',
+                'actions' => [['label' => 'Xem Chính sách Bảo mật', 'url' => 'index.php?url=policy/privacy']]
+            ]
+        ];
+
+        foreach ($policyKeywords as $keyword => $data) {
+            if (strpos($normalizedInput, $keyword) !== false) {
+                return $this->successResponse(['message' => $data['message'], 'actions' => $data['actions']]);
+            }
+        }
+
+        // --- START KNOWLEDGE BASE LOOKUP (ADVANCED) ---
+        $knowledgeBase = include(__DIR__ . '/knowledge_base.php');
+
+        // Helper function to normalize string for KB search (lowercase, no accents)
+        if (!function_exists('normalize_string_for_kb_search')) {
+            function normalize_string_for_kb_search($str) {
+                $str = mb_strtolower($str, 'UTF-8');
+                // Convert Vietnamese characters to basic latin
+                $str = preg_replace("/(à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ)/u", 'a', $str);
+                $str = preg_replace("/(è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ)/u", 'e', $str);
+                $str = preg_replace("/(ì|í|ị|ỉ|ĩ)/u", 'i', $str);
+                $str = preg_replace("/(ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ)/u", 'o', $str);
+                $str = preg_replace("/(ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ)/u", 'u', $str);
+                $str = preg_replace("/(ỳ|ý|ỵ|ỷ|ỹ)/u", 'y', $str);
+                $str = preg_replace("/(đ)/u", 'd', $str);
+                // Remove punctuation, but keep spaces
+                $str = preg_replace('/[^\p{L}\p{N}\s]/u', '', $str);
+                return $str;
+            }
+        }
+
+        $normalized_kb_input = normalize_string_for_kb_search($userInput);
+
+        foreach ($knowledgeBase as $rule) {
+            $keywords = $rule['keywords'];
+            $match_type = $rule['match_type'];
+            $answer = $rule['answer'];
+            $match_found = false;
+
+            if ($match_type === 'all') {
+                $all_keywords_found = true;
+                foreach ($keywords as $keyword) {
+                    if (strpos($normalized_kb_input, $keyword) === false) {
+                        $all_keywords_found = false;
+                        break;
+                    }
+                }
+                if ($all_keywords_found) {
+                    $match_found = true;
+                }
+            } elseif ($match_type === 'any') {
+                foreach ($keywords as $keyword) {
+                    if (strpos($normalized_kb_input, $keyword) !== false) {
+                        $match_found = true;
+                        break;
+                    }
+                }
+            }
+
+            if ($match_found) {
+                return $this->successResponse(['message' => $answer]);
+            }
+        }
+        // --- END KNOWLEDGE BASE LOOKUP ---
+
+        // --- START CACHING LOGIC ---
+        $cacheFile = __DIR__ . '/ai_cache.json';
+        $cacheDuration = 86400; // 24 hours
+        $cacheKey = md5(mb_strtolower($userInput, 'UTF-8'));
+
+        if (file_exists($cacheFile)) {
+            $cache = json_decode(file_get_contents($cacheFile), true);
+            if (is_array($cache) && isset($cache[$cacheKey]) && (time() - $cache[$cacheKey]['timestamp']) < $cacheDuration) {
+                return $this->successResponse(['message' => $cache[$cacheKey]['response']]);
+            }
+        }
+        // --- END CACHING LOGIC ---
+
+        // --- START AI INTEGRATION ---
+
+        $apiKey = $_ENV['GEMINI_API_KEY'] ?? getenv('GEMINI_API_KEY');
+        if (!$apiKey) {
+            return $this->errorResponse('API key for Gemini is not configured.');
+        }
+        
+        $url = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=' . $apiKey;
+
+        $data = [
+            'contents' => [
+                [
+                    'role' => 'user',
+                    'parts' => [['text' => $userInput]]
+                ]
+            ]
+        ];
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($curlError) {
+            file_put_contents(__DIR__ . '/debug.log', "AI API cURL Error: " . $curlError . "\n", FILE_APPEND);
+            return $this->successResponse(['message' => "Xin lỗi, tôi đang gặp sự cố kết nối với trí tuệ nhân tạo. Vui lòng thử lại sau."]);
+        }
+
+        if ($httpCode !== 200) {
+            file_put_contents(__DIR__ . '/debug.log', "AI API HTTP Error: Code " . $httpCode . " | Response: " . $response . "\n", FILE_APPEND);
+            if ($httpCode === 429) {
+                return $this->successResponse(['message' => "Xin lỗi, hệ thống AI hiện đang nhận được rất nhiều yêu cầu và tạm thời bị quá tải. Bạn vui lòng thử lại sau ít phút nhé."]);
+            } 
+            return $this->successResponse(['message' => "Xin lỗi, có lỗi xảy ra khi xử lý yêu cầu của bạn với AI. (Code: " . $httpCode . ")"]);
+        }
+
+        $result = json_decode($response, true);
+
+        if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
+            $aiResponse = $result['candidates'][0]['content']['parts'][0]['text'];
+            
+            // --- START CACHING LOGIC ---
+            $cacheData = file_exists($cacheFile) ? json_decode(file_get_contents($cacheFile), true) : [];
+            if (!is_array($cacheData)) {
+                $cacheData = [];
+            }
+            $cacheData[$cacheKey] = [
+                'timestamp' => time(),
+                'response' => $aiResponse
+            ];
+            file_put_contents($cacheFile, json_encode($cacheData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            // --- END CACHING LOGIC ---
+
+        } else {
+            file_put_contents(__DIR__ . '/debug.log', "AI API Unexpected Response: " . $response . "\n", FILE_APPEND);
+            $aiResponse = "Tôi đã nhận được phản hồi từ AI nhưng không thể diễn giải được. Vui lòng thử lại.";
+        }
+
+        // --- END AI INTEGRATION ---
+
+        return $this->successResponse(['message' => $aiResponse]);
+
+    }
 
     private function handleProductInquiry() {
         $priceRange = $this->entities['priceRange'] ?? null;

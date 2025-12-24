@@ -10,4 +10,3 @@ define('CONTROLLERS_PATH', __DIR__ . '/../controllers/');
 define('ITEMS_PER_PAGE', 12);
 define('SESSION_COOKIE_LIFETIME', 86400);
 ?>
-<?php

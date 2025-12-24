@@ -1,4 +1,7 @@
 <?php
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_log.txt');
+error_reporting(E_ALL);
 // admin.php
 // Bật hiển thị lỗi để debug trong quá trình phát triển
 ini_set('display_errors', 1);
@@ -105,6 +108,12 @@ switch ($controller_name) {
         // Quản lý khuyến mãi
         $controller = new AdminPromotionController();
         break;
+    case 'get_revenue_data':
+        require_once 'controllers/AdminRevenueController.php';
+        $controller = new AdminRevenueController();
+        $controller->getRevenueData();
+        break;
+
     case 'revenue':
         // Thống kê doanh thu
         $controller = new AdminRevenueController();

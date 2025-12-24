@@ -19,6 +19,9 @@ class AdminRevenueController {
             // Thêm log để debug
             error_log('AdminRevenueController::index() called');
             
+            // Tạo dữ liệu mẫu nếu bảng trống
+            $this->revenueModel->generateSampleDataIfEmpty();
+
             // Lấy ngày bắt đầu và kết thúc từ query string, mặc định 30 ngày gần nhất
             $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d', strtotime('-30 days'));
             $end_date = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
@@ -27,6 +30,7 @@ class AdminRevenueController {
 
             // Lấy dữ liệu doanh thu theo khoảng ngày
             $revenue_data = $this->revenueModel->getRevenueByDateRange($start_date, $end_date);
+            error_log('SQL query for date range: ' . $this->revenueModel->getLastQuery());
             // Tính tổng doanh thu từ dữ liệu đã lấy
             $total_revenue = array_sum(array_column($revenue_data, 'total'));
 
@@ -62,6 +66,9 @@ class AdminRevenueController {
     public function getRevenueData() {
         header('Content-Type: application/json');
         try {
+            // Ghi lại toàn bộ yêu cầu GET để gỡ lỗi
+            error_log('getRevenueData GET request: ' . print_r($_GET, true));
+
             $filterType = $_GET['filter_type'] ?? 'range';
 
             $labels = [];
@@ -114,11 +121,15 @@ class AdminRevenueController {
 
             $totalRevenue = array_sum($data);
 
-            echo json_encode([
+            $response = [
                 'labels' => $labels,
                 'data' => $data,
                 'totalRevenue' => $totalRevenue
-            ]);
+            ];
+
+            error_log('getRevenueData response: ' . print_r($response, true));
+
+            echo json_encode($response);
         } catch (Exception $e) {
             error_log('Error in getRevenueData: ' . $e->getMessage());
             http_response_code(500);
